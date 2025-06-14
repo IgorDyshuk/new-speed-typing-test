@@ -1,13 +1,10 @@
 "use client"
 
-import * as React from "react"
 import {
-    Calculator,
-    Calendar,
     CreditCard,
     Settings,
-    Smile,
     User,
+    Earth
 } from "lucide-react"
 
 import {
@@ -20,68 +17,59 @@ import {
     CommandSeparator,
     CommandShortcut,
 } from "@/components/ui/command"
+import {useState} from "react";
 
 export function LangChoice() {
-    const [open, setOpen] = React.useState(false)
+    const [open, setOpen] = useState(false)
 
-    React.useEffect(() => {
-        const down = (e: KeyboardEvent) => {
-            if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault()
-                setOpen((open) => !open)
-            }
-        }
-
-        document.addEventListener("keydown", down)
-        return () => document.removeEventListener("keydown", down)
-    }, [])
+    const handleClick = async () => {
+        setOpen(true)
+    }
 
     return (
-        <>
-            <p className="text-muted-foreground text-sm">
-                Press{" "}
-                <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none">
-                    <span className="text-xs">⌘</span>J
-                </kbd>
-            </p>
+        <div className={"flex justify-center"}>
+            <button
+                onClick={handleClick}
+                className={"flex items-center justify-center gap-3 text-lg font-[500]" +
+                    " hover: cursor-pointer"}
+            >
+                <Earth className={"w-5"}/> english
+            </button>
             <CommandDialog open={open} onOpenChange={setOpen}>
-                <CommandInput placeholder="Type a command or search..." />
+                <CommandInput placeholder="Type a command or search..."/>
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
                     <CommandGroup heading="Suggestions">
                         <CommandItem>
-                            <Calendar />
-                            <span>Calendar</span>
+                            <span>English</span>
                         </CommandItem>
                         <CommandItem>
-                            <Smile />
-                            <span>Search Emoji</span>
+                            <span>Ukrainian</span>
                         </CommandItem>
                         <CommandItem>
-                            <Calculator />
-                            <span>Calculator</span>
+                            <span>Russian</span>
                         </CommandItem>
                     </CommandGroup>
-                    <CommandSeparator />
-                    <CommandGroup heading="Settings">
+                    <CommandSeparator/>
+                    <CommandGroup heading="Other languages:">
                         <CommandItem>
-                            <User />
+                            <User/>
                             <span>Profile</span>
                             <CommandShortcut>⌘P</CommandShortcut>
                         </CommandItem>
                         <CommandItem>
-                            <CreditCard />
+                            <CreditCard/>
                             <span>Billing</span>
                             <CommandShortcut>⌘B</CommandShortcut>
                         </CommandItem>
                         <CommandItem>
-                            <Settings />
+                            <Settings/>
                             <span>Settings</span>
                             <CommandShortcut>⌘S</CommandShortcut>
                         </CommandItem>
                     </CommandGroup>
                 </CommandList>
             </CommandDialog>
-        </>
+        </div>
     )
 }
