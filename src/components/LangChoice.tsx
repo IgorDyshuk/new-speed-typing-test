@@ -19,34 +19,43 @@ import {
 } from "@/components/ui/command"
 import {useState} from "react";
 
-export function LangChoice() {
+export function LangChoice({ setSelectedLang}: { setSelectedLang: (lang: string) => void}) {
     const [open, setOpen] = useState(false)
+    const [lang, setLang] = useState<string>("english")
 
-    const handleClick = async () => {
-        setOpen(true)
-    }
+    const handleSelect = (code: string, label: string) => {
+        setLang(label);
+        setOpen(false);
+        setSelectedLang(code);
+    };
 
     return (
         <div className={"flex justify-center"}>
             <button
-                onClick={handleClick}
+                onClick={() => setOpen(true)}
                 className={"flex items-center justify-center gap-3 text-lg font-[500]" +
                     " hover: cursor-pointer"}
             >
-                <Earth className={"w-5"}/> english
+                <Earth className={"w-5"}/> {lang}
             </button>
             <CommandDialog open={open} onOpenChange={setOpen}>
                 <CommandInput placeholder="Type a command or search..."/>
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
                     <CommandGroup heading="Suggestions">
-                        <CommandItem>
-                            <span>English</span>
+                        <CommandItem
+                            onSelect={() => handleSelect("en", "english")}
+                        >
+                            English
                         </CommandItem>
-                        <CommandItem>
+                        <CommandItem
+                            onSelect={() => handleSelect("uk", "ukrainian")}
+                        >
                             <span>Ukrainian</span>
                         </CommandItem>
-                        <CommandItem>
+                        <CommandItem
+                            onSelect={() => handleSelect("ru", "russian")}
+                        >
                             <span>Russian</span>
                         </CommandItem>
                     </CommandGroup>
