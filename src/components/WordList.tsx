@@ -1,4 +1,3 @@
-// import {eng_words} from "@/assets/words.ts";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
 
 export default function WordList({words, isLoading}: {words: string[], isLoading: boolean}) {
@@ -29,14 +28,5 @@ export default function WordList({words, isLoading}: {words: string[], isLoading
                  </span>
             ))}
         </div>
-    // <div className="flex flex-wrap gap-2 overflow-hidden max-h-[12rem] py-3">
-    //     {Array.from({length: 35}).map((_, i) => (
-    //         <Skeleton
-    //             key={i}
-    //             className="inline-block mx-[0.4em] my-[0.65em] h-8 rounded bg-black"
-    //             style={{width: `${Math.floor(Math.random() * 60) + 110}px`}}
-    //         />
-    //     ))}
-    // </div>
     )
 }
