@@ -1,9 +1,6 @@
 "use client"
 
 import {
-    CreditCard,
-    Settings,
-    User,
     Earth
 } from "lucide-react"
 
@@ -14,19 +11,52 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
-    CommandSeparator,
-    CommandShortcut,
 } from "@/components/ui/command"
-import {useState} from "react";
+import {useState, useEffect} from "react";
+import { useTranslation } from "react-i18next";
 
-export function LangChoice({ setSelectedLang}: { setSelectedLang: (lang: string) => void}) {
+export function LangChoice() {
+    const { i18n } = useTranslation()
     const [open, setOpen] = useState(false)
-    const [lang, setLang] = useState<string>("english")
+    const [selected, setSelected] = useState('English')
 
-    const handleSelect = (code: string, label: string) => {
-        setLang(label);
+    const languages = [
+        // European languages
+        { label: 'English', code: 'en' },
+        { label: 'German', code: 'de' },
+        { label: 'French', code: 'fr' },
+        { label: 'Spanish', code: 'es' },
+        { label: 'Italian', code: 'it' },
+        { label: 'Portuguese', code: 'pt' },
+        { label: 'Dutch', code: 'nl' },
+        { label: 'Polish', code: 'pl' },
+        { label: 'Russian', code: 'ru' },
+        { label: 'Ukrainian', code: 'uk' },
+        { label: 'Czech', code: 'cs' },
+        { label: 'Hungarian', code: 'hu' },
+        
+        // Asian languages
+        { label: 'Chinese', code: 'zh' },
+        { label: 'Japanese', code: 'ja' },
+        { label: 'Korean', code: 'ko' },
+        
+        // Additional languages
+        { label: 'Swedish', code: 'sv' },
+        { label: 'Turkish', code: 'tr' },
+        { label: 'Arabic', code: 'ar' },
+        { label: 'Hindi', code: 'hi' },
+        { label: 'Romanian', code: 'ro' },
+    ];
+
+    useEffect(() => {
+        const current = languages.find(l => l.code === i18n.language) || languages[0];
+        setSelected(current.label);
+    }, [i18n.language]);
+
+    const handleSelect = (lang: { label: string; code: string }) => {
+        setSelected(lang.label);
+        i18n.changeLanguage(lang.code);
         setOpen(false);
-        setSelectedLang(code);
     };
 
     return (
@@ -34,48 +64,24 @@ export function LangChoice({ setSelectedLang}: { setSelectedLang: (lang: string)
             <button
                 onClick={() => setOpen(true)}
                 className={"flex items-center justify-center gap-3 text-lg font-[500]" +
-                    " hover: cursor-pointer"}
+                    " hover:cursor-pointer"}
             >
-                <Earth className={"w-5"}/> {lang}
+                <Earth className={"w-5"}/> {selected}
             </button>
             <CommandDialog open={open} onOpenChange={setOpen}>
-                <CommandInput placeholder="Type a command or search..."/>
+                <CommandInput placeholder="Choose language..."/>
                 <CommandList>
                     <CommandEmpty>No results found.</CommandEmpty>
-                    <CommandGroup heading="Suggestions">
-                        <CommandItem
-                            onSelect={() => handleSelect("en", "english")}
-                        >
-                            English
-                        </CommandItem>
-                        <CommandItem
-                            onSelect={() => handleSelect("uk", "ukrainian")}
-                        >
-                            <span>Ukrainian</span>
-                        </CommandItem>
-                        <CommandItem
-                            onSelect={() => handleSelect("ru", "russian")}
-                        >
-                            <span>Russian</span>
-                        </CommandItem>
-                    </CommandGroup>
-                    <CommandSeparator/>
-                    <CommandGroup heading="Other languages:">
-                        <CommandItem>
-                            <User/>
-                            <span>Profile</span>
-                            <CommandShortcut>⌘P</CommandShortcut>
-                        </CommandItem>
-                        <CommandItem>
-                            <CreditCard/>
-                            <span>Billing</span>
-                            <CommandShortcut>⌘B</CommandShortcut>
-                        </CommandItem>
-                        <CommandItem>
-                            <Settings/>
-                            <span>Settings</span>
-                            <CommandShortcut>⌘S</CommandShortcut>
-                        </CommandItem>
+                    <CommandGroup heading="Languages">
+                        {languages.map((lang) => (
+                            <CommandItem
+                                key={lang.code}
+                                onSelect={() => handleSelect(lang)}
+                                className={selected === lang.label ? 'font-bold' : ''}
+                            >
+                                {lang.label}
+                            </CommandItem>
+                        ))}
                     </CommandGroup>
                 </CommandList>
             </CommandDialog>
