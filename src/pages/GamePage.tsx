@@ -2,6 +2,7 @@ import WordList from "@/components/WordList";
 import { LangChoice } from "@/components/LangChoice.tsx";
 import { ThemeChoice } from "@/components/ThemeChoice";
 import CountdownTimer from "@/components/CountdownTimer";
+import RestartButton from "@/components/restartButton/RestartButton.tsx";
 
 export default function GamePage() {
   return (
@@ -16,6 +17,7 @@ export default function GamePage() {
         <div />
       </div>
       <WordList />
+      <RestartButton />
 
       <div className="absolute bottom-40 right-32">
         <ThemeChoice />

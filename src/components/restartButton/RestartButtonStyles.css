@@ -1,0 +1,53 @@
+#restart-btn {
+  margin-top: 1.2rem;
+  color: var(--sub-color);
+  position: relative;
+}
+
+#restart-btn:hover {
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+#restart-btn::before {
+  content: "Restart  Test";
+  position: absolute;
+  top: 37px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.1rem;
+  white-space: nowrap;
+  color: white;
+  background-color: black;
+  padding: 5px 20px;
+  border-radius: 5px;
+  opacity: 0;
+  transition: all 0.18s ease-in-out;
+  pointer-events: none;
+}
+
+#restart-btn::after {
+  content: "";
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-bottom: 0.625rem solid black;
+  border-left: 0.5rem solid transparent;
+  border-right: 0.5rem solid transparent;
+  opacity: 0;
+  transition: all 0.18s ease-in-out;
+  pointer-events: none;
+}
+
+#restart-btn:hover::before {
+  opacity: 1;
+  top: 47px;
+}
+
+#restart-btn:hover::after {
+  opacity: 1;
+  top: 38px;
+}
