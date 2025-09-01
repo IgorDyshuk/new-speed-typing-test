@@ -4,12 +4,13 @@ import { ThemeChoice } from "@/components/ThemeChoice";
 
 export default function GamePage() {
   return (
-    <div className="px-30">
-      <div className={"flex h-[80vh] flex-col items-center justify-center"}>
-        <LangChoice />
-        <WordList />
+    <div className="relative min-h-screen px-30 py-40 bg-background flex flex-col items-center justify-center">
+      <LangChoice />
+      <WordList />
+
+      <div className="absolute bottom-40 right-32">
+        <ThemeChoice />
       </div>
-      <ThemeChoice />
     </div>
   );
 }

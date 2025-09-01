@@ -41,7 +41,7 @@ function Palette({ name }: { name: Theme }) {
       />
       <span
         className="h-3 w-3 rounded-full"
-        style={{ background: "var(--sub-alt-color)" }}
+        style={{ background: "var(--text-color)" }}
       />
     </span>
   );
