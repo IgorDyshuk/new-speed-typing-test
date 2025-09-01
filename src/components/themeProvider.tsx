@@ -61,7 +61,7 @@ export function ThemeProvider({
       availableThemes && availableThemes.length
         ? availableThemes
         : [...ALL_THEMES],
-    [availableThemes]
+    [availableThemes],
   );
 
   // безопасно читаем initial из localStorage/дефолта и валидируем
@@ -97,7 +97,7 @@ export function ThemeProvider({
       },
       themes,
     }),
-    [theme, themes, storageKey]
+    [theme, themes, storageKey],
   );
 
   return (

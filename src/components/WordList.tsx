@@ -5,7 +5,7 @@ export default function WordList() {
   const getRandomWords = (arr: string[], count: number) =>
     Array.from(
       { length: count },
-      () => arr[Math.floor(Math.random() * arr.length)]
+      () => arr[Math.floor(Math.random() * arr.length)],
     );
 
   const text = t("text").split(" ");
