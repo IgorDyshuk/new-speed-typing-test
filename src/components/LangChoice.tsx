@@ -16,34 +16,31 @@ import { useTranslation } from "react-i18next";
 export function LangChoice() {
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState("English");
+  const [selected, setSelected] = useState("english");
 
   const languages = [
-    // European languages
-    { label: "English", code: "en" },
-    { label: "German", code: "de" },
-    { label: "French", code: "fr" },
-    { label: "Spanish", code: "es" },
-    { label: "Italian", code: "it" },
-    { label: "Portuguese", code: "pt" },
-    { label: "Dutch", code: "nl" },
-    { label: "Polish", code: "pl" },
-    { label: "Russian", code: "ru" },
-    { label: "Ukrainian", code: "uk" },
-    { label: "Czech", code: "cs" },
-    { label: "Hungarian", code: "hu" },
+    { label: "english", code: "en" },
+    { label: "german", code: "de" },
+    { label: "french", code: "fr" },
+    { label: "spanish", code: "es" },
+    { label: "italian", code: "it" },
+    { label: "portuguese", code: "pt" },
+    { label: "dutch", code: "nl" },
+    { label: "polish", code: "pl" },
+    { label: "russian", code: "ru" },
+    { label: "ukrainian", code: "uk" },
+    { label: "czech", code: "cs" },
+    { label: "hungarian", code: "hu" },
 
-    // Asian languages
-    { label: "Chinese", code: "zh" },
-    { label: "Japanese", code: "ja" },
-    { label: "Korean", code: "ko" },
+    { label: "chinese", code: "zh" },
+    { label: "japanese", code: "ja" },
+    { label: "korean", code: "ko" },
 
-    // Additional languages
-    { label: "Swedish", code: "sv" },
-    { label: "Turkish", code: "tr" },
-    { label: "Arabic", code: "ar" },
-    { label: "Hindi", code: "hi" },
-    { label: "Romanian", code: "ro" },
+    { label: "swedish", code: "sv" },
+    { label: "turkish", code: "tr" },
+    { label: "arabic", code: "ar" },
+    { label: "hindi", code: "hi" },
+    { label: "romanian", code: "ro" },
   ];
 
   useEffect(() => {

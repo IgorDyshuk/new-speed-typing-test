@@ -11,4 +11,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    // Allow accessing the dev server via the ngrok host
+    allowedHosts: ["partly-popular-airedale.ngrok-free.app"],
+    // Listen on all interfaces so tunnels/proxies can reach it
+    host: true,
+  },
 });
