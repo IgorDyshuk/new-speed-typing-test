@@ -65,6 +65,8 @@ export default function useTypingGame(wordCount: number = 100) {
     });
   }, [generateWords]);
 
+
+  // TODO: Add more languages (добавить в папку locales в json файл alphabet и передавать его в этот хук)
   const allowKey = (key: string) => {
     // letters (Latin + Cyrillic + Ukrainian), space
     return /^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ ]$/.test(key);
@@ -90,6 +92,8 @@ export default function useTypingGame(wordCount: number = 100) {
         return;
       }
 
+      // Word underline on mistakes is handled in WordList by checking
+      // statuses[wi] for any "incorrect" or extras[wi].length > 0.
       setState((prev) => {
         let { words, currentWordIndex, currentCharIndex } = prev;
         const statusesCopy = prev.statuses.map((row) => [...row]);

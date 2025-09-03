@@ -20,17 +20,21 @@ export default function WordList({
         const letterStatuses = statuses[wi] || [];
         const extraChars = extras[wi] || [];
         const isCurrentWord = wi === currentWordIndex;
+        const hasError =
+          extraChars.length > 0 ||
+          letterStatuses.some((s) => s === "incorrect");
+        const shouldOutline = wi < currentWordIndex && hasError;
 
         return (
           <span
             key={wi}
-            className="inline-block mx-[0.3em] my-[0.25em] text-[32px] font-[450]"
+            className={`inline-block mx-[0.3em] my-[0.25em] text-[32px] font-[450] ${shouldOutline ? "shadow-[inset_0_-2px_0_0_var(--color-error)]" : ""}`}
           >
             {letters.map((ch, ci) => {
               const st = letterStatuses[ci] ?? "pending";
               const isCurrent = isCurrentWord && ci === currentCharIndex;
               let colorClass = "text-sub";
-              if (st === "correct") colorClass = "text-main";
+              if (st === "correct") colorClass = "text-text";
               if (st === "incorrect") colorClass = "text-error";
               const underline = isCurrent ? "border-b-2 border-caret" : "";
               return (
