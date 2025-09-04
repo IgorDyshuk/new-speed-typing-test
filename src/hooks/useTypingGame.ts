@@ -19,7 +19,7 @@ function buildExtras(words: string[]): string[][] {
   return words.map(() => []);
 }
 
-export default function useTypingGame(wordCount: number = 100) {
+export default function useTypingGame(wordCount: number = 100, durationSeconds: number = 30) {
   const { t, i18n } = useTranslation();
 
   const dictionary = useMemo(() => t("text").split(" "), [t, i18n.language]);
@@ -43,6 +43,11 @@ export default function useTypingGame(wordCount: number = 100) {
     };
   });
 
+  // Timer state
+  const [started, setStarted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(durationSeconds);
+  const [finished, setFinished] = useState(false);
+
   useEffect(() => {
     const words = generateWords();
     setState({
@@ -52,6 +57,9 @@ export default function useTypingGame(wordCount: number = 100) {
       statuses: buildStatuses(words),
       extras: buildExtras(words),
     });
+    setStarted(false);
+    setTimeLeft(durationSeconds);
+    setFinished(false);
   }, [generateWords]);
 
   const restart = useCallback(() => {
@@ -63,7 +71,26 @@ export default function useTypingGame(wordCount: number = 100) {
       statuses: buildStatuses(words),
       extras: buildExtras(words),
     });
-  }, [generateWords]);
+    setStarted(false);
+    setTimeLeft(durationSeconds);
+    setFinished(false);
+  }, [generateWords, durationSeconds]);
+
+  // Timer effect
+  useEffect(() => {
+    if (!started || finished) return;
+    const id = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(id);
+          setFinished(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [started, finished]);
 
 
   // TODO: Add more languages (добавить в папку locales в json файл alphabet и передавать его в этот хук)
@@ -74,6 +101,11 @@ export default function useTypingGame(wordCount: number = 100) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      // Block any input when game finished
+      if (finished) {
+        e.preventDefault();
+        return;
+      }
       const key = e.key;
 
       // Ignore when no words
@@ -265,6 +297,7 @@ export default function useTypingGame(wordCount: number = 100) {
         }
 
         if (isLetter) {
+          if (!started) setStarted(true);
           const expected = currentWord[currentCharIndex] ?? "";
           if (currentCharIndex < currentWord.length) {
             wordStatuses[currentCharIndex] = key === expected ? "correct" : "incorrect";
@@ -296,7 +329,7 @@ export default function useTypingGame(wordCount: number = 100) {
         };
       });
     },
-    [state.words.length],
+    [state.words.length, finished, started],
   );
 
   const handleBeforeInput = useCallback(
@@ -316,6 +349,9 @@ export default function useTypingGame(wordCount: number = 100) {
 
       // Prevent actual input value changes; we render from state only
       e.preventDefault();
+
+      // Block input when game finished
+      if (finished) return;
 
       // Map to key handling
       const key = isInsert ? (data || "") : "";
@@ -422,6 +458,8 @@ export default function useTypingGame(wordCount: number = 100) {
         }
 
         if (isInsert) {
+          // Start timer only on letters, not on spaces
+          if (isLetter && !started) setStarted(true);
           if (currentCharIndex < currentWord.length) {
             const expected = currentWord[currentCharIndex] ?? "";
             wordStatuses[currentCharIndex] = key === expected ? "correct" : "incorrect";
@@ -457,5 +495,9 @@ export default function useTypingGame(wordCount: number = 100) {
     restart,
     handleKeyDown,
     handleBeforeInput,
+    // timer
+    started,
+    timeLeft,
+    finished,
   };
 }

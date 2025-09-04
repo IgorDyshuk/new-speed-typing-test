@@ -8,7 +8,7 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="royal" storageKey="vite-ui-theme">
-      <div className="bg-background">
+      <div className="bg-background leading-[250%]">
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
             <Routes>

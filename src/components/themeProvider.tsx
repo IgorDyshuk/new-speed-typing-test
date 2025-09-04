@@ -49,6 +49,7 @@ function isValidTheme(x: any): x is Theme {
   return typeof x === "string" && (ALL_THEMES as readonly string[]).includes(x);
 }
 
+//TODO: Добавить стейст-менеджер зюстанд и с помощью его запонминать какакя тема выбрана была выбрана последняя и вставлять ее при повторном открытии страницы
 export function ThemeProvider({
   children,
   defaultTheme = "royal",

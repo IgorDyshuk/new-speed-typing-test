@@ -16,6 +16,8 @@ export default function GamePage() {
     handleKeyDown,
     handleBeforeInput,
     restart,
+    started,
+    timeLeft,
   } = useTypingGame(100);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -30,14 +32,21 @@ export default function GamePage() {
     >
       <div className="grid grid-cols-3 items-center w-full">
         <div className="justify-self-start">
-          <CountdownTimer timeLeft={30} />
+          <div
+            className={`transition-opacity duration-300 ${started ? "opacity-100" : "opacity-0"}`}
+          >
+            <CountdownTimer timeLeft={timeLeft} />
+          </div>
         </div>
         <div className="justify-self-center">
           <LangChoice />
         </div>
         <div />
       </div>
-      <div className="relative w-full" onClick={() => inputRef.current?.focus()}>
+      <div
+        className="relative w-full"
+        onClick={() => inputRef.current?.focus()}
+      >
         <div className="relative z-10">
           <WordList
             words={words}

@@ -14,7 +14,7 @@ export default function WordList({
   currentCharIndex: number;
 }) {
   return (
-    <div className="flex flex-wrap overflow-hidden max-h-[12rem]">
+    <div className="flex flex-wrap overflow-hidden max-h-[10.5rem]">
       {words.map((word, wi) => {
         const letters = word.split("");
         const letterStatuses = statuses[wi] || [];

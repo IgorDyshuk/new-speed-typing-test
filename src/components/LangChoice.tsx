@@ -13,6 +13,7 @@ import {
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
+//TODO: Добавить стейст-менеджер зюстанд и с помощью его запонминать какакя язык был выбран последний и вставлять его при повторном открытии страницы
 export function LangChoice() {
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
