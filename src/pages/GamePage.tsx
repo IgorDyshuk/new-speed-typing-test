@@ -18,6 +18,9 @@ export default function GamePage() {
     restart,
     started,
     timeLeft,
+    finished,
+    wpm,
+    acc,
   } = useTypingGame(100);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -76,6 +79,16 @@ export default function GamePage() {
       </div>
       <div onClick={restart}>
         <RestartButton />
+      </div>
+      <div
+        className={`relative z-10 mt-4 flex items-center gap-6 text-sub transition-opacity duration-300 ${finished ? "opacity-100" : "opacity-0"}`}
+      >
+        <div className="text-lg font-medium">
+          WPM: <span className="text-text">{Math.round(wpm)}</span>
+        </div>
+        <div className="text-lg font-medium">
+          ACC: <span className="text-text">{Math.round(acc)}%</span>
+        </div>
       </div>
 
       <div className="absolute bottom-40 right-32">

@@ -19,7 +19,7 @@ function buildExtras(words: string[]): string[][] {
   return words.map(() => []);
 }
 
-export default function useTypingGame(wordCount: number = 100, durationSeconds: number = 30) {
+export default function useTypingGame(wordCount: number = 100, durationSeconds: number = 10) {
   const { t, i18n } = useTranslation();
 
   const dictionary = useMemo(() => t("text").split(" "), [t, i18n.language]);
@@ -92,28 +92,31 @@ export default function useTypingGame(wordCount: number = 100, durationSeconds: 
     return () => clearInterval(id);
   }, [started, finished]);
 
-  // Allowed alphabet sourced from locale (fallback to Latin+Cyrillic regex)
-  const alphabetSet = useMemo(() => {
-    const alphabet = t("alphabet", { defaultValue: "" });
-    // If key is missing, i18n may return the key name; guard against that
-    if (alphabet && alphabet !== "alphabet") {
-      const set = new Set<string>();
-      for (const ch of alphabet) set.add(ch);
-      set.add(" "); // always allow space
-      return set;
+  // Accept any printable character; filtering is removed to support all layouts
+
+  // Derived results: words per minute (wpm) and accuracy (acc)
+  const { wpm, acc } = useMemo(() => {
+    // Count typed and correct chars fast
+    let typed = 0;
+    let correct = 0;
+    for (let wi = 0; wi < state.statuses.length; wi++) {
+      const row = state.statuses[wi];
+      for (let i = 0; i < row.length; i++) {
+        const st = row[i];
+        if (st !== "pending") typed++;
+        if (st === "correct") correct++;
+      }
     }
-    return null;
-  }, [t, i18n.language]);
+    for (let wi = 0; wi < state.extras.length; wi++) {
+      typed += state.extras[wi].length; // extras are always incorrect
+    }
 
-  const defaultAllowRegex = useMemo(() => /^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ ]$/, []);
-
-  const allowKey = (key: string) => {
-    if (alphabetSet) return key.length === 1 && alphabetSet.has(key);
-    return defaultAllowRegex.test(key);
-  };
-
-
-  //TODO: добавть результаты, (wpm и acc) и отображать их снизу блока печатаемых букв
+    const elapsedSec = Math.max(0, durationSeconds - timeLeft);
+    const minutes = elapsedSec > 0 ? elapsedSec / 60 : 0;
+    const wpm = minutes > 0 ? (correct / 5) / minutes : 0;
+    const acc = typed > 0 ? (correct / typed) * 100 : 100;
+    return { wpm, acc };
+  }, [state.statuses, state.extras, timeLeft, durationSeconds]);
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       // Block any input when game finished
@@ -134,9 +137,6 @@ export default function useTypingGame(wordCount: number = 100, durationSeconds: 
 
       if (isBackspace) {
         e.preventDefault();
-      } else if ((e.altKey || e.metaKey || !allowKey(key)) && !isSpace) {
-        e.preventDefault();
-        return;
       }
 
       // Word underline on mistakes is handled in WordList by checking
@@ -514,5 +514,8 @@ export default function useTypingGame(wordCount: number = 100, durationSeconds: 
     started,
     timeLeft,
     finished,
+    // results
+    wpm,
+    acc,
   };
 }
