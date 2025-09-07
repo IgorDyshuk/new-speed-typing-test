@@ -92,13 +92,28 @@ export default function useTypingGame(wordCount: number = 100, durationSeconds: 
     return () => clearInterval(id);
   }, [started, finished]);
 
+  // Allowed alphabet sourced from locale (fallback to Latin+Cyrillic regex)
+  const alphabetSet = useMemo(() => {
+    const alphabet = t("alphabet", { defaultValue: "" });
+    // If key is missing, i18n may return the key name; guard against that
+    if (alphabet && alphabet !== "alphabet") {
+      const set = new Set<string>();
+      for (const ch of alphabet) set.add(ch);
+      set.add(" "); // always allow space
+      return set;
+    }
+    return null;
+  }, [t, i18n.language]);
 
-  // TODO: Add more languages (добавить в папку locales в json файл alphabet и передавать его в этот хук)
+  const defaultAllowRegex = useMemo(() => /^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ ]$/, []);
+
   const allowKey = (key: string) => {
-    // letters (Latin + Cyrillic + Ukrainian), space
-    return /^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ ]$/.test(key);
+    if (alphabetSet) return key.length === 1 && alphabetSet.has(key);
+    return defaultAllowRegex.test(key);
   };
 
+
+  //TODO: добавть результаты, (wpm и acc) и отображать их снизу блока печатаемых букв
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       // Block any input when game finished

@@ -1,5 +1,6 @@
 import type { LetterStatus } from "@/hooks/useTypingGame";
 
+//TODO: добавть режимы в котором можно в печатаемый текст добавлять цифры и знаки припинания
 export default function WordList({
   words,
   statuses,
@@ -25,6 +26,7 @@ export default function WordList({
           letterStatuses.some((s) => s === "incorrect");
         const shouldOutline = wi < currentWordIndex && hasError;
 
+        // TODO: Сделать прокуртку слов, когда курсор находится на последней букве на второй линиии, прокручивать слова на одну линию вверх, тоесть курсор сначала проходит полностью первую линию потому вторую и затем слова всегда прокручиваются и мы играем только на второй линии (чтобы узнать на сколько прокурчивать думаю сделть юзеффект с рефом на первой слово, чтобы узнать его высоту и прокурчивать линию на это выстоу)
         return (
           <span
             key={wi}
@@ -36,6 +38,8 @@ export default function WordList({
               let colorClass = "text-sub";
               if (st === "correct") colorClass = "text-text";
               if (st === "incorrect") colorClass = "text-error";
+
+              // TODO: Сделать вместо подчеркивания курсор
               const underline = isCurrent ? "border-b-2 border-caret" : "";
               return (
                 <span
