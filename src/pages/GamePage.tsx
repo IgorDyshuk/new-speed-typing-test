@@ -4,7 +4,7 @@ import { ThemeChoice } from "@/components/ThemeChoice";
 import CountdownTimer from "@/components/CountdownTimer";
 import RestartButton from "@/components/restartButton/RestartButton.tsx";
 import useTypingGame from "@/hooks/useTypingGame";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function GamePage() {
   const {
@@ -26,8 +26,59 @@ export default function GamePage() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     inputRef.current?.focus();
-  }, [words]);
+  }, []);
 
+  const [idle, setIdle] = useState(false);
+  const INACTIVITY_MS = 5000;
+  const inactivityTimeoutRef = useRef<number | null>(null);
+  const lastInputRef = useRef<number>(0);
+
+  const clearInactivityTimer = useCallback(() => {
+    if (inactivityTimeoutRef.current !== null) {
+      window.clearTimeout(inactivityTimeoutRef.current);
+      inactivityTimeoutRef.current = null;
+    }
+  }, []);
+
+  const scheduleIdle = useCallback(() => {
+    clearInactivityTimer();
+    inactivityTimeoutRef.current = window.setTimeout(() => {
+      if (Date.now() - lastInputRef.current >= INACTIVITY_MS) {
+        setIdle(true);
+      }
+    }, INACTIVITY_MS);
+  }, [clearInactivityTimer]);
+
+  const touchActivity = useCallback(() => {
+    if (!started || finished) return;
+    lastInputRef.current = Date.now();
+    setIdle(false);
+    scheduleIdle();
+  }, [started, finished, scheduleIdle]);
+
+  useEffect(() => {
+    if (started && !finished) {
+      lastInputRef.current = Date.now();
+      setIdle(false);
+      scheduleIdle();
+    } else {
+      clearInactivityTimer();
+      setIdle(false);
+    }
+    return () => clearInactivityTimer();
+  }, [started, finished, scheduleIdle, clearInactivityTimer]);
+
+  const handleRestart = useCallback(() => {
+    restart();
+
+    inputRef.current?.focus();
+
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  }, [restart]);
+
+  //TODO: Сделать модалку что игра не в фокусе на область ввода
   return (
     <div
       id="game"
@@ -47,7 +98,7 @@ export default function GamePage() {
         <div />
       </div>
       <div
-        className="relative w-full"
+        className="relative w-full typing-area"
         onClick={() => inputRef.current?.focus()}
       >
         <div className="relative z-10">
@@ -57,6 +108,8 @@ export default function GamePage() {
             extras={extras}
             currentWordIndex={currentWordIndex}
             currentCharIndex={currentCharIndex}
+            started={started}
+            idle={idle}
           />
         </div>
         <input
@@ -66,18 +119,29 @@ export default function GamePage() {
           autoCapitalize="off"
           autoCorrect="off"
           spellCheck={false}
-          onKeyDown={handleKeyDown}
-          onBeforeInput={handleBeforeInput}
+          autoFocus
+          onKeyDown={(e) => {
+            touchActivity();
+            handleKeyDown(e);
+          }}
+          onBeforeInput={(e) => {
+            touchActivity();
+            handleBeforeInput(e);
+          }}
           onChange={(e) => {
             // keep empty
             e.currentTarget.value = "";
           }}
+          onFocus={() => {
+            if (started && !finished) touchActivity();
+          }}
+          onBlur={clearInactivityTimer}
           defaultValue=""
           className="absolute inset-0 z-0 opacity-0 pointer-events-none"
           aria-hidden
         />
       </div>
-      <div onClick={restart}>
+      <div onClick={handleRestart}>
         <RestartButton />
       </div>
       <div

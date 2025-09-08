@@ -349,3 +349,29 @@
   }
 }
 
+/* Blinking caret for pre-typing state */
+@keyframes typing-caret-blink {
+  0% {opacity: 0;}
+  50% {opacity: 1;}
+  100% {opacity: 0;}
+}
+
+@keyframes blink-typing-caret {
+  0% {opacity: 1;}
+  50% {opacity: 0;}
+  100% {opacity: 1;}
+}
+
+.caret-blink {
+  animation: typing-caret-blink 1s ease-in-out infinite;
+}
+
+.blink-caret {
+  animation: blink-typing-caret 1s ease-in-out infinite;
+}
+
+/* Hide caret when typing area is not focused */
+.typing-area:not(:focus-within) .typing-caret {
+  opacity: 0;
+  animation: none;
+}

@@ -19,7 +19,7 @@ function buildExtras(words: string[]): string[][] {
   return words.map(() => []);
 }
 
-export default function useTypingGame(wordCount: number = 100, durationSeconds: number = 10) {
+export default function useTypingGame(wordCount: number = 100, durationSeconds: number = 30) {
   const { t, i18n } = useTranslation();
 
   const dictionary = useMemo(() => t("text").split(" "), [t, i18n.language]);
