@@ -7,11 +7,13 @@ export default function TypingCaret({
   containerRef,
   deps = [],
   started = false,
+  finished = false,
   idle = false,
 }: {
   containerRef: RefObject<HTMLDivElement | null>;
   deps?: readonly unknown[];
   started: boolean;
+  finished: boolean;
   idle?: boolean;
 }) {
   const [pos, setPos] = useState<CaretPos>(null);
@@ -34,7 +36,7 @@ export default function TypingCaret({
 
   return (
     <span
-      className={`typing-caret pointer-events-none absolute bg-caret z-10 ${!started ? "caret-blink" : ""} ${idle ? "blink-caret" : ""}`}
+      className={`typing-caret pointer-events-none absolute bg-caret z-10 ${!started ? "caret-blink" : ""} ${idle && !finished ? "blink-caret" : ""} ${finished ? "opacity-0" : "opacity-100"}`}
       style={{
         left: pos.left - 1.5,
         top: pos.top,

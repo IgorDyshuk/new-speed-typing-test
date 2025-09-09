@@ -87,12 +87,14 @@ export default function GamePage() {
       <div className="grid grid-cols-3 items-center w-full">
         <div className="justify-self-start">
           <div
-            className={`transition-opacity duration-300 ${started ? "opacity-100" : "opacity-0"}`}
+            className={`transition-opacity duration-300 ${started && !finished ? "opacity-100" : "opacity-0"}`}
           >
             <CountdownTimer timeLeft={timeLeft} />
           </div>
         </div>
-        <div className="justify-self-center">
+        <div
+          className={`justify-self-center transition-opacity duration-300 ${!started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"}`}
+        >
           <LangChoice />
         </div>
         <div />
@@ -109,6 +111,7 @@ export default function GamePage() {
             currentWordIndex={currentWordIndex}
             currentCharIndex={currentCharIndex}
             started={started}
+            finished={finished}
             idle={idle}
           />
         </div>
@@ -141,7 +144,12 @@ export default function GamePage() {
           aria-hidden
         />
       </div>
-      <div onClick={handleRestart}>
+
+      {/* //TODO: Сделать как с курсором что если 5 сек бездействовать то показывать кнопку рестарта */}
+      <div
+        className={`transition-opacity duration-300 ${!started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"} ${idle ? "opacity-100" : "opacity-0"}`}
+        onClick={handleRestart}
+      >
         <RestartButton />
       </div>
       <div
@@ -154,8 +162,9 @@ export default function GamePage() {
           ACC: <span className="text-text">{Math.round(acc)}%</span>
         </div>
       </div>
-
-      <div className="absolute bottom-40 right-32">
+      <div
+        className={`absolute bottom-40 right-32 transition-opacity duration-300 ${!started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"}`}
+      >
         <ThemeChoice />
       </div>
     </div>

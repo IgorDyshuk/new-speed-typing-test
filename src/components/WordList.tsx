@@ -1,5 +1,5 @@
 import type { LetterStatus } from "@/hooks/useTypingGame";
-import { useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import TypingCaret from "./TypingCaret";
 
 //TODO: добавть режимы в котором можно в печатаемый текст добавлять цифры и знаки припинания
@@ -10,6 +10,7 @@ export default function WordList({
   currentWordIndex,
   currentCharIndex,
   started,
+  finished,
   idle,
 }: {
   words: string[];
@@ -18,72 +19,135 @@ export default function WordList({
   currentWordIndex: number;
   currentCharIndex: number;
   started: boolean;
+  finished: boolean;
   idle: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const wordsWrapRef = useRef<HTMLDivElement | null>(null);
+  const firstWordRef = useRef<HTMLSpanElement | null>(null);
+  const lineHeightRef = useRef<number>(0);
+  const measuredRef = useRef(false);
+  const [contentOffset, setContentOffset] = useState(0);
+
+  // Measure line height once using the first word (height + vertical margins)
+  useLayoutEffect(() => {
+    const el = firstWordRef.current;
+    if (!el || measuredRef.current) return;
+    const style = window.getComputedStyle(el);
+    const mt = parseFloat(style.marginTop || "0");
+    const mb = parseFloat(style.marginBottom || "0");
+    const h = el.offsetHeight + mt + mb;
+    if (h > 0) {
+      lineHeightRef.current = h;
+      measuredRef.current = true;
+    }
+  }, []);
+
+  // Auto-scroll by shifting words' margin-top when caret moves beyond second line
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const lh =
+      lineHeightRef.current ||
+      container.getBoundingClientRect().height / 3 ||
+      48;
+
+    const current = container.querySelector(
+      '[data-current="true"]',
+    ) as HTMLElement | null;
+    if (!current) return;
+
+    const cRect = container.getBoundingClientRect();
+    const curRect = current.getBoundingClientRect();
+    const relTop = curRect.top - cRect.top;
+
+    // If caret reaches 3rd visible line, move content up by one line
+    if (relTop >= lh * 2) {
+      setContentOffset((prev) => prev - lh);
+    }
+  }, [
+    currentWordIndex,
+    currentCharIndex,
+    extras[currentWordIndex]?.length,
+    words.length,
+    words[currentWordIndex],
+  ]);
+
+  // Reset content offset when test restarts (started becomes false with new words)
+  useLayoutEffect(() => {
+    if (!started) {
+      setContentOffset(0);
+    }
+  }, [started, words.length]);
 
   return (
     <div
       ref={containerRef}
-      className="relative flex flex-wrap overflow-hidden max-h-[10.5rem]"
+      className="relative overflow-hidden max-h-[10.5rem]"
     >
-      {words.map((word, wi) => {
-        const letters = word.split("");
-        const letterStatuses = statuses[wi] || [];
-        const extraChars = extras[wi] || [];
-        const isCurrentWord = wi === currentWordIndex;
-        const hasError =
-          extraChars.length > 0 ||
-          letterStatuses.some((s) => s === "incorrect");
-        const shouldOutline = wi < currentWordIndex && hasError;
-
-        // TODO: Сделать прокуртку слов, когда курсор находится на последней букве на второй линиии, прокручивать слова на одну линию вверх, тоесть курсор сначала проходит полностью первую линию потому вторую и затем слова всегда прокручиваются и мы играем только на второй линии (чтобы узнать на сколько прокурчивать думаю сделть юзеффект с рефом на первой слово, чтобы узнать его высоту и прокурчивать линию на это выстоу)
-        return (
-          <span
-            key={wi}
-            className={`inline-block mx-[0.3em] my-[0.25em] text-[32px] font-[450] ${shouldOutline ? "shadow-[inset_0_-2px_0_0_var(--color-error)]" : ""}`}
-          >
-            {letters.map((ch, ci) => {
-              const st = letterStatuses[ci] ?? "pending";
-              const isCurrent = isCurrentWord && ci === currentCharIndex;
-              const isEndAnchor =
-                isCurrentWord &&
-                currentCharIndex === letters.length &&
-                extraChars.length === 0 &&
-                ci === letters.length - 1;
-              let colorClass = "text-sub";
-              if (st === "correct") colorClass = "text-text";
-              if (st === "incorrect") colorClass = "text-error";
-              return (
-                <span
-                  key={`${wi}_${ci}`}
-                  className={`letter ${colorClass}`}
-                  data-current={isCurrent || isEndAnchor ? "true" : undefined}
-                  data-side={
-                    isEndAnchor ? "after" : isCurrent ? "before" : undefined
-                  }
-                >
-                  {ch}
-                </span>
-              );
-            })}
-            {extraChars.map((ex, idx) => {
-              const isLastExtra =
-                isCurrentWord && idx === extraChars.length - 1;
-              return (
-                <span
-                  key={`ex_${wi}_${idx}`}
-                  className="letter text-error-extra"
-                  data-current={isLastExtra ? "true" : undefined}
-                  data-side={isLastExtra ? "after" : undefined}
-                >
-                  {ex}
-                </span>
-              );
-            })}
-          </span>
-        );
-      })}
+      <div
+        id="words"
+        ref={wordsWrapRef}
+        className="flex flex-wrap"
+        style={{ marginTop: contentOffset }}
+      >
+        {words.map((word, wi) => {
+          const letters = word.split("");
+          const letterStatuses = statuses[wi] || [];
+          const extraChars = extras[wi] || [];
+          const isCurrentWord = wi === currentWordIndex;
+          const hasError =
+            extraChars.length > 0 ||
+            letterStatuses.some((s) => s === "incorrect");
+          const shouldOutline = wi < currentWordIndex && hasError;
+          return (
+            <span
+              key={wi}
+              ref={wi === 0 ? firstWordRef : undefined}
+              className={`word inline-block mx-[0.3em] my-[0.25em] text-[32px] font-[450] ${isCurrentWord ? "current" : ""} ${shouldOutline ? "shadow-[inset_0_-2px_0_0_var(--color-error)]" : ""}`}
+            >
+              {letters.map((ch, ci) => {
+                const st = letterStatuses[ci] ?? "pending";
+                const isCurrent = isCurrentWord && ci === currentCharIndex;
+                const isEndAnchor =
+                  isCurrentWord &&
+                  currentCharIndex === letters.length &&
+                  extraChars.length === 0 &&
+                  ci === letters.length - 1;
+                let colorClass = "text-sub";
+                if (st === "correct") colorClass = "text-text";
+                if (st === "incorrect") colorClass = "text-error";
+                return (
+                  <span
+                    key={`${wi}_${ci}`}
+                    className={`letter ${colorClass} ${isCurrent ? "current" : ""}`}
+                    data-current={isCurrent || isEndAnchor ? "true" : undefined}
+                    data-side={
+                      isEndAnchor ? "after" : isCurrent ? "before" : undefined
+                    }
+                  >
+                    {ch}
+                  </span>
+                );
+              })}
+              {extraChars.map((ex, idx) => {
+                const isLastExtra =
+                  isCurrentWord && idx === extraChars.length - 1;
+                return (
+                  <span
+                    key={`ex_${wi}_${idx}`}
+                    className="letter text-error-extra"
+                    data-current={isLastExtra ? "true" : undefined}
+                    data-side={isLastExtra ? "after" : undefined}
+                  >
+                    {ex}
+                  </span>
+                );
+              })}
+            </span>
+          );
+        })}
+      </div>
       <TypingCaret
         containerRef={containerRef}
         deps={[
@@ -92,8 +156,10 @@ export default function WordList({
           extras[currentWordIndex]?.length ?? 0,
           words[currentWordIndex],
           words.length,
+          contentOffset,
         ]}
         started={started}
+        finished={finished}
         idle={idle}
       />
     </div>
