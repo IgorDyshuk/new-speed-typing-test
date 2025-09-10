@@ -83,7 +83,7 @@ export default function WordList({
   return (
     <div
       ref={containerRef}
-      className="relative overflow-hidden max-h-[10.5rem]"
+      className="relative overflow-hidden max-h-[10.5rem] words-blurred"
     >
       <div
         id="words"

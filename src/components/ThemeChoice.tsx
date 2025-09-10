@@ -47,7 +47,11 @@ function Palette({ name }: { name: Theme }) {
   );
 }
 
-export function ThemeChoice() {
+export function ThemeChoice({
+  onCloseFucusTyping,
+}: {
+  onCloseFucusTyping?: () => void;
+}) {
   const { theme, setTheme, themes } = useTheme();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Theme>(theme);
@@ -63,6 +67,7 @@ export function ThemeChoice() {
     setSelected(name);
     setTheme(name);
     setOpen(false);
+    onCloseFucusTyping?.();
   };
 
   const preview = (name: Theme) => {
@@ -103,6 +108,10 @@ export function ThemeChoice() {
   return (
     <div className="mr-auto flex justify-end text-main">
       <button
+        onMouseDown={(e) => {
+          e.preventDefault();
+          setOpen(true);
+        }}
         onClick={() => setOpen(true)}
         className="flex items-center justify-center gap-2 text-lg font-[500] hover:cursor-pointer"
       >
@@ -113,9 +122,13 @@ export function ThemeChoice() {
       <CommandDialog
         open={open}
         onOpenChange={(v) => {
-          if (!v) revert();
+          if (!v) {
+            revert();
+            onCloseFucusTyping?.();
+          }
           setOpen(v);
         }}
+        modal={false}
       >
         <CommandInput placeholder="Choose theme..." />
         <CommandList

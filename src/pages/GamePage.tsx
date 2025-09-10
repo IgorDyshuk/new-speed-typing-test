@@ -5,6 +5,7 @@ import CountdownTimer from "@/components/CountdownTimer";
 import RestartButton from "@/components/restartButton/RestartButton.tsx";
 import useTypingGame from "@/hooks/useTypingGame";
 import { useCallback, useEffect, useRef, useState } from "react";
+import ModalBlur from "@/components/ModalBlur";
 
 export default function GamePage() {
   const {
@@ -95,7 +96,11 @@ export default function GamePage() {
         <div
           className={`justify-self-center transition-opacity duration-300 ${!started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"}`}
         >
-          <LangChoice />
+          <LangChoice
+            onCloseFucusTyping={() =>
+              requestAnimationFrame(() => inputRef.current?.focus())
+            }
+          />
         </div>
         <div />
       </div>
@@ -114,6 +119,7 @@ export default function GamePage() {
             finished={finished}
             idle={idle}
           />
+          <ModalBlur />
         </div>
         <input
           ref={inputRef}
@@ -145,9 +151,8 @@ export default function GamePage() {
         />
       </div>
 
-      {/* //TODO: Сделать как с курсором что если 5 сек бездействовать то показывать кнопку рестарта */}
       <div
-        className={`transition-opacity duration-300 ${!started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"} ${idle ? "opacity-100" : "opacity-0"}`}
+        className={`transition-opacity duration-300`}
         onClick={handleRestart}
       >
         <RestartButton />
@@ -165,7 +170,11 @@ export default function GamePage() {
       <div
         className={`absolute bottom-40 right-32 transition-opacity duration-300 ${!started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"}`}
       >
-        <ThemeChoice />
+        <ThemeChoice
+          onCloseFucusTyping={() =>
+            requestAnimationFrame(() => inputRef.current?.focus())
+          }
+        />
       </div>
     </div>
   );
