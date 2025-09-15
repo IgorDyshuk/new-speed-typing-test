@@ -1,6 +1,5 @@
 import { useLayoutEffect, useState, type RefObject } from "react";
 
-//TODO: ревертнуть полследний коммит и добавить чтобы курсор появлялся только тогда когда начинают печатать(появлять его через опасити)
 type CaretPos = { left: number; top: number; height: number } | null;
 
 export default function TypingCaret({

@@ -76,6 +76,13 @@ export default function useTypingGame(wordCount: number = 100, durationSeconds: 
     setFinished(false);
   }, [generateWords, durationSeconds]);
 
+  // Reset timer (and stop the game) when duration changes
+  useEffect(() => {
+    setStarted(false);
+    setFinished(false);
+    setTimeLeft(durationSeconds);
+  }, [durationSeconds]);
+
   // Timer effect
   useEffect(() => {
     if (!started || finished) return;

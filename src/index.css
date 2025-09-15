@@ -410,3 +410,22 @@
   opacity: 1;
   transition-delay: 1.5s;
 }
+
+#app {
+  min-height: 100vh;
+  grid-template-rows: [top-start] auto [content-start] 1fr [content-end] auto [top-end];
+  overflow: hidden;
+  row-gap: 2rem;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  width: 100%;
+}
+
+.content-grid {
+  --padding-inline: 2rem;
+  /* --content-max-width: 1536px; */
+  --breakout-size: calc((calc(var(--content-max-width) + 12rem) - var(--content-max-width)) / 2);
+  justify-content: center;
+  display: grid;
+  grid-template-columns: [full-width-start] var(--padding-inline) [full-width-padding-start] minmax(0, 1fr) [breakout-start] minmax(0, var(--breakout-size)) [content-start] min(100% - var(--padding-inline) * 2, var(--content-max-width)) [content-end] minmax(0, var(--breakout-size)) [breakout-end] minmax(0, 1fr) [full-width-padding-end] var(--padding-inline) [full-width-end];
+}
