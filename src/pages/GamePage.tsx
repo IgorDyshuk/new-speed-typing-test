@@ -8,8 +8,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ModalBlur from "@/components/ModalBlur";
 import TestConfig from "@/components/TestConfig";
 
+// TODO: сделать режим при выборе режима слова(при нажатии на кнопку words в компоненте TestConfig), там вместо времени надо написать все колличество слов которые ты выбрал, и тест заканчивается не тогда когда выйдет время а когда ты дописал все слова, и вместо обратоного отсчета должно показывться отношение написанных слов ко всем
 export default function GamePage() {
   const [duration, setDuration] = useState<number>(30);
+  const [wordCount, setWordCount] = useState<number>(100);
   const {
     words,
     statuses,
@@ -24,7 +26,7 @@ export default function GamePage() {
     finished,
     wpm,
     acc,
-  } = useTypingGame(100, duration);
+  } = useTypingGame(wordCount, duration);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
@@ -85,15 +87,26 @@ export default function GamePage() {
     <div className="px-30 bg-background h-screen">
       {/* <header></header> */}
       <main className="flex items-center flex-col">
-        <TestConfig
-          duration={duration}
-          onChangeDuration={(s) => {
-            setDuration(s);
-            requestAnimationFrame(() => {
-              inputRef.current?.focus();
-            });
-          }}
-        />
+        <div
+          className={`transition-opacity duration-300 ${!started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"}`}
+        >
+          <TestConfig
+            duration={duration}
+            onChangeDuration={(s) => {
+              setDuration(s);
+              requestAnimationFrame(() => {
+                inputRef.current?.focus();
+              });
+            }}
+            wordCount={wordCount}
+            onWordCount={(n) => {
+              setWordCount(n);
+              requestAnimationFrame(() => {
+                inputRef.current?.focus();
+              });
+            }}
+          />
+        </div>
         <div
           id="typingTest"
           className="relative pt-75 flex flex-col items-center justify-center outline-none"
