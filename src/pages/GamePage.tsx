@@ -3,15 +3,15 @@ import { LangChoice } from "@/components/LangChoice.tsx";
 import { ThemeChoice } from "@/components/ThemeChoice";
 import CountdownTimer from "@/components/CountdownTimer";
 import RestartButton from "@/components/restartButton/RestartButton.tsx";
-import useTypingGame from "@/hooks/useTypingGame";
+import useTypingGame, { type TestMode } from "@/hooks/useTypingGame";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ModalBlur from "@/components/ModalBlur";
 import TestConfig from "@/components/TestConfig";
 
-// TODO: сделать режим при выборе режима слова(при нажатии на кнопку words в компоненте TestConfig), там вместо времени надо написать все колличество слов которые ты выбрал, и тест заканчивается не тогда когда выйдет время а когда ты дописал все слова, и вместо обратоного отсчета должно показывться отношение написанных слов ко всем
 export default function GamePage() {
   const [duration, setDuration] = useState<number>(30);
   const [wordCount, setWordCount] = useState<number>(100);
+  const [mode, setMode] = useState<TestMode>("time");
   const {
     words,
     statuses,
@@ -26,7 +26,79 @@ export default function GamePage() {
     finished,
     wpm,
     acc,
-  } = useTypingGame(wordCount, duration);
+    wordsCompleted,
+    totalWords,
+  } = useTypingGame(wordCount, duration, mode);
+
+  const [renderWords, setRenderWords] = useState(words);
+  const [renderStatuses, setRenderStatuses] = useState(statuses);
+  const [renderExtras, setRenderExtras] = useState(extras);
+  const [wordsPhase, setWordsPhase] = useState<"idle" | "fade-out" | "fade-in">(
+    "idle",
+  );
+  const fadeOutTimeoutRef = useRef<number | null>(null);
+  const fadeInTimeoutRef = useRef<number | null>(null);
+  const WORDS_FADE_MS = 140;
+
+  const wordsMatch = useCallback(
+    (a: string[], b: string[]) =>
+      a.length === b.length && a.every((word, idx) => word === b[idx]),
+    [],
+  );
+
+  useEffect(() => {
+    if (wordsMatch(renderWords, words)) {
+      setRenderStatuses(statuses);
+      setRenderExtras(extras);
+      return;
+    }
+
+    setWordsPhase("fade-out");
+    if (fadeOutTimeoutRef.current !== null) {
+      window.clearTimeout(fadeOutTimeoutRef.current);
+    }
+    fadeOutTimeoutRef.current = window.setTimeout(() => {
+      setRenderWords(words);
+      setRenderStatuses(statuses);
+      setRenderExtras(extras);
+      setWordsPhase("fade-in");
+    }, WORDS_FADE_MS);
+
+    return () => {
+      if (fadeOutTimeoutRef.current !== null) {
+        window.clearTimeout(fadeOutTimeoutRef.current);
+        fadeOutTimeoutRef.current = null;
+      }
+    };
+  }, [words, statuses, extras, renderWords, wordsMatch]);
+
+  useEffect(() => {
+    if (wordsPhase !== "fade-in") return;
+    if (fadeInTimeoutRef.current !== null) {
+      window.clearTimeout(fadeInTimeoutRef.current);
+    }
+    fadeInTimeoutRef.current = window.setTimeout(
+      () => setWordsPhase("idle"),
+      WORDS_FADE_MS,
+    );
+    return () => {
+      if (fadeInTimeoutRef.current !== null) {
+        window.clearTimeout(fadeInTimeoutRef.current);
+        fadeInTimeoutRef.current = null;
+      }
+    };
+  }, [wordsPhase]);
+
+  useEffect(() => {
+    return () => {
+      if (fadeOutTimeoutRef.current !== null) {
+        window.clearTimeout(fadeOutTimeoutRef.current);
+      }
+      if (fadeInTimeoutRef.current !== null) {
+        window.clearTimeout(fadeInTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
@@ -88,12 +160,15 @@ export default function GamePage() {
       {/* <header></header> */}
       <main className="flex items-center flex-col">
         <div
-          className={`transition-opacity duration-300 ${!started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"}`}
+          className={`transition-opacity duration-300 ${
+            !started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"
+          }`}
         >
           <TestConfig
             duration={duration}
             onChangeDuration={(s) => {
               setDuration(s);
+              restart();
               requestAnimationFrame(() => {
                 inputRef.current?.focus();
               });
@@ -101,6 +176,20 @@ export default function GamePage() {
             wordCount={wordCount}
             onWordCount={(n) => {
               setWordCount(n);
+              restart();
+              requestAnimationFrame(() => {
+                inputRef.current?.focus();
+              });
+            }}
+            mode={mode}
+            onModeChange={(nextMode) => {
+              setMode(nextMode);
+              if (nextMode === "words") {
+                setWordCount((prev) => (prev === 100 ? prev : 100));
+              } else {
+                setWordCount(100);
+              }
+              restart();
               requestAnimationFrame(() => {
                 inputRef.current?.focus();
               });
@@ -109,15 +198,29 @@ export default function GamePage() {
         </div>
         <div
           id="typingTest"
-          className="relative pt-75 flex flex-col items-center justify-center outline-none"
+          className={`relative pt-75 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
+            wordsPhase === "fade-out" ? "opacity-0" : "opacity-100"
+          }`}
         >
           <div className="grid grid-cols-3 items-center w-full">
             <div className="justify-self-start">
-              <div
-                className={`transition-opacity duration-300 ${started && !finished ? "opacity-100" : "opacity-0"}`}
-              >
-                <CountdownTimer timeLeft={timeLeft} />
-              </div>
+              {mode === "time" ? (
+                <div
+                  className={`transition-opacity duration-300 ${
+                    started && !finished ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <CountdownTimer timeLeft={timeLeft} />
+                </div>
+              ) : (
+                <div
+                  className={`text-main text-[2rem] transition-opacity duration-300 ${
+                    started && !finished ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  {wordsCompleted} / {totalWords}
+                </div>
+              )}
             </div>
             <div
               className={`justify-self-center transition-opacity duration-300 ${!started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"}`}
@@ -136,14 +239,15 @@ export default function GamePage() {
           >
             <div className="relative z-10">
               <WordList
-                words={words}
-                statuses={statuses}
-                extras={extras}
+                words={renderWords}
+                statuses={renderStatuses}
+                extras={renderExtras}
                 currentWordIndex={currentWordIndex}
                 currentCharIndex={currentCharIndex}
                 started={started}
                 finished={finished}
                 idle={idle}
+                mode={mode}
               />
               <ModalBlur />
             </div>
@@ -183,15 +287,16 @@ export default function GamePage() {
           >
             <RestartButton />
           </div>
-          <div
-            className={`relative z-10 mt-4 flex items-center gap-6 text-sub transition-opacity duration-300 ${finished ? "opacity-100" : "opacity-0"}`}
-          >
-            <div className="text-lg font-medium">
-              WPM: <span className="text-text">{Math.round(wpm)}</span>
-            </div>
-            <div className="text-lg font-medium">
-              ACC: <span className="text-text">{Math.round(acc)}%</span>
-            </div>
+        </div>
+
+        <div
+          className={`relative z-10 mt-4 flex items-center gap-6 text-sub transition-opacity duration-300 ${finished ? "opacity-100" : "opacity-0"}`}
+        >
+          <div className="text-lg font-medium">
+            WPM: <span className="text-text">{Math.round(wpm)}</span>
+          </div>
+          <div className="text-lg font-medium">
+            ACC: <span className="text-text">{Math.round(acc)}%</span>
           </div>
         </div>
       </main>
@@ -207,4 +312,3 @@ export default function GamePage() {
     </div>
   );
 }
-// duration controlled via TestConfig

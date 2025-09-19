@@ -1,7 +1,5 @@
-// components/theme-provider.tsx
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-// ЕДИНЫЙ список всех тем (должны совпадать с data-theme в CSS)
 export const ALL_THEMES = [
   "royal",
   "ocean",
@@ -27,14 +25,13 @@ export const ALL_THEMES = [
   "midnight",
 ] as const;
 
-// Тип автоматически выводится из массива
 export type Theme = (typeof ALL_THEMES)[number];
 
 export type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: Theme;
   storageKey?: string;
-  availableThemes?: Theme[]; // можно ограничить подмножество тем
+  availableThemes?: Theme[];
 };
 
 export type ThemeProviderState = {
@@ -56,7 +53,6 @@ export function ThemeProvider({
   storageKey = "vite-ui-theme",
   availableThemes,
 }: ThemeProviderProps) {
-  // выбираем актуальный список тем (всё или ограниченное подмножество)
   const themes = useMemo<Theme[]>(
     () =>
       availableThemes && availableThemes.length
@@ -65,15 +61,12 @@ export function ThemeProvider({
     [availableThemes],
   );
 
-  // безопасно читаем initial из localStorage/дефолта и валидируем
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem(storageKey);
     const initial = isValidTheme(saved) ? saved : defaultTheme;
-    // если defaultTheme не входит в themes (когда availableThemes ограничен) — возьмём первый доступный
     return themes.includes(initial) ? initial : themes[0];
   });
 
-  // если список themes меняется (через availableThemes), убедимся что текущая тема валидна
   useEffect(() => {
     if (!themes.includes(theme)) {
       const next = themes[0];
@@ -81,7 +74,6 @@ export function ThemeProvider({
       localStorage.setItem(storageKey, next);
       document.documentElement.setAttribute("data-theme", next);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [themes]);
 
   useEffect(() => {

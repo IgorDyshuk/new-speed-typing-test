@@ -1,16 +1,22 @@
 import { AtSign, Hash, Clock, CaseUpper, Wrench } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+type TestMode = "time" | "words";
+
 export default function TestConfig({
   duration,
   onChangeDuration,
   wordCount,
   onWordCount,
+  mode,
+  onModeChange,
 }: {
   duration: number;
   onChangeDuration: (seconds: number) => void;
   wordCount: number;
   onWordCount: (n: number) => void;
+  mode: TestMode;
+  onModeChange: (mode: TestMode) => void;
 }) {
   const [customOpen, setCustomOpen] = useState(false);
   const [customStr, setCustomStr] = useState("");
@@ -21,18 +27,74 @@ export default function TestConfig({
     time: null,
     words: null,
   });
-  const [panel, setPanel] = useState<"time" | "words">("time");
   const words = [10, 25, 50, 100];
   const times = [10, 30, 60, 120];
 
-  const isTimePanel = panel === "time";
-  const isWordsPanel = panel === "words";
+  const [displayMode, setDisplayMode] = useState<TestMode>(mode);
+  const [panelPhase, setPanelPhase] = useState<"idle" | "fade-out" | "fade-in">(
+    "idle",
+  );
+  const fadeOutTimeoutRef = useRef<number | null>(null);
+  const fadeInTimeoutRef = useRef<number | null>(null);
+  const PANEL_FADE_MS = 140;
+
+  useEffect(() => {
+    if (displayMode === mode) return;
+    setPanelPhase("fade-out");
+    if (fadeOutTimeoutRef.current !== null) {
+      window.clearTimeout(fadeOutTimeoutRef.current);
+    }
+    fadeOutTimeoutRef.current = window.setTimeout(() => {
+      setDisplayMode(mode);
+      setPanelPhase("fade-in");
+    }, PANEL_FADE_MS);
+
+    return () => {
+      if (fadeOutTimeoutRef.current !== null) {
+        window.clearTimeout(fadeOutTimeoutRef.current);
+        fadeOutTimeoutRef.current = null;
+      }
+    };
+  }, [mode, displayMode]);
+
+  useEffect(() => {
+    if (panelPhase !== "fade-in") return;
+    if (fadeInTimeoutRef.current !== null) {
+      window.clearTimeout(fadeInTimeoutRef.current);
+    }
+    fadeInTimeoutRef.current = window.setTimeout(
+      () => setPanelPhase("idle"),
+      PANEL_FADE_MS,
+    );
+    return () => {
+      if (fadeInTimeoutRef.current !== null) {
+        window.clearTimeout(fadeInTimeoutRef.current);
+        fadeInTimeoutRef.current = null;
+      }
+    };
+  }, [panelPhase]);
+
+  useEffect(() => {
+    return () => {
+      if (fadeOutTimeoutRef.current !== null) {
+        window.clearTimeout(fadeOutTimeoutRef.current);
+      }
+      if (fadeInTimeoutRef.current !== null) {
+        window.clearTimeout(fadeInTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const isTimePanel = displayMode === "time";
+  const isWordsPanel = displayMode === "words";
+  const isActiveTime = mode === "time";
+  const isActiveWords = mode === "words";
 
   const panelClasses = (active: boolean) =>
-    `flex w-full items-center gap-3 transition-all duration-300 ${
+    `flex w-full items-center gap-3 transition-opacity duration-200 ${
       active
-        ? "opacity-100 translate-y-0 pointer-events-auto relative"
-        : "opacity-0 translate-y-2 pointer-events-none absolute inset-0"
+        ? "opacity-100 pointer-events-auto relative"
+        : "opacity-0 pointer-events-none absolute inset-0"
     }`;
 
   const timeInputRef = useRef<HTMLInputElement | null>(null);
@@ -40,18 +102,19 @@ export default function TestConfig({
   useEffect(() => {
     if (customOpen) {
       requestAnimationFrame(() => {
-        const target =
-          panel === "time" ? timeInputRef.current : wordsInputRef.current;
+        const target = isTimePanel
+          ? timeInputRef.current
+          : wordsInputRef.current;
         target?.focus();
         target?.select();
       });
     }
-  }, [customOpen, panel]);
+  }, [customOpen, isTimePanel]);
 
   const commitCustom = () => {
     const s = parseInt(customStr.trim(), 10);
     if (!Number.isNaN(s) && s > 0) {
-      if (panel === "time") {
+      if (isTimePanel) {
         const isPreset = times.includes(s);
         onChangeDuration(s);
         setLastCustom((prev) => ({ ...prev, time: isPreset ? null : s }));
@@ -85,11 +148,11 @@ export default function TestConfig({
       <button
         type="button"
         onClick={() => {
-          setPanel("time");
+          onModeChange("time");
           setCustomOpen(false);
           setCustomStr("");
         }}
-        className={`flex items-center gap-1 transition-colors duration-200 hover:cursor-pointer ${panel === "time" ? "text-main" : ""}`}
+        className={`flex items-center gap-1 transition-colors duration-200 hover:cursor-pointer ${isActiveTime ? "text-main" : ""}`}
       >
         <Clock size={15} />
         time
@@ -97,52 +160,67 @@ export default function TestConfig({
       <button
         type="button"
         onClick={() => {
-          setPanel("words");
+          onModeChange("words");
           setCustomOpen(false);
           setCustomStr("");
         }}
-        className={`flex items-center gap-0.5 transition-colors duration-200 hover:cursor-pointer ${panel === "words" ? "text-main" : ""}`}
+        className={`flex items-center gap-0.5 transition-colors duration-200 hover:cursor-pointer ${isActiveWords ? "text-main" : ""}`}
       >
         <CaseUpper size={24} className="pt-[5px]" /> words
       </button>
       <div className="w-2 h-6 bg-background rounded-2xl" />
-      <div className="relative min-h-[32px] min-w-[200px] flex-1">
+      {/* TODO: переделать переход с помощью затухания */}
+      <div
+        className={`relative min-h-[32px] min-w-[200px] flex-1 transition-opacity duration-150 ${
+          panelPhase === "fade-out" ? "opacity-0" : "opacity-100"
+        }`}
+      >
         <div className={panelClasses(isTimePanel)}>
-          {times.map((t) => (
+          <div className="flex items-center gap-3">
+            {times.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => {
+                  onChangeDuration(t);
+                  setLastCustom((prev) => ({ ...prev, time: null }));
+                }}
+                aria-pressed={duration === t}
+                className={`px-2 py-1 rounded-sm transition-colors ${
+                  duration === t
+                    ? "text-main"
+                    : "hover:text-text hover:cursor-pointer"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
             <button
-              key={t}
               type="button"
               onClick={() => {
-                onChangeDuration(t);
-                setLastCustom((prev) => ({ ...prev, time: null }));
+                setCustomOpen((v) => !v);
+                setCustomStr("");
               }}
-              aria-pressed={duration === t}
+              aria-pressed={!times.includes(duration)}
               className={`px-2 py-1 rounded-sm transition-colors ${
-                duration === t
-                  ? "bg-main text-background"
-                  : "hover:bg-sub/20 hover:cursor-pointer text-sub"
+                !times.includes(duration)
+                  ? "text-main"
+                  : "hover:text-text hover:cursor-pointer"
               }`}
             >
-              {t}
+              {lastCustom.time !== null ? (
+                lastCustom.time
+              ) : (
+                <Wrench size={18} />
+              )}
             </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => {
-              setCustomOpen((v) => !v);
-              setCustomStr("");
-            }}
-            aria-pressed={!times.includes(duration)}
-            className={`px-2 py-1 rounded-sm transition-colors ${
-              !times.includes(duration)
-                ? "bg-main text-background"
-                : "hover:bg-sub/20 hover:cursor-pointer text-sub"
-            }`}
-          >
-            {lastCustom.time !== null ? lastCustom.time : <Wrench size={18} />}
-          </button>
+          </div>
           <div
-            className={`overflow-hidden transition-all duration-200 ${customOpen && isTimePanel ? "w-20 opacity-100" : "w-0 opacity-0"}`}
+            className={`overflow-hidden transition-all duration-200 ${
+              customOpen && isTimePanel
+                ? "ml-3 w-20 opacity-100"
+                : "ml-0 w-0 opacity-0"
+            }`}
           >
             <input
               ref={timeInputRef}
@@ -162,41 +240,51 @@ export default function TestConfig({
           </div>
         </div>
         <div className={panelClasses(isWordsPanel)}>
-          {words.map((n) => (
+          <div className="flex items-center gap-3">
+            {words.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => {
+                  onWordCount(n);
+                  setLastCustom((prev) => ({ ...prev, words: null }));
+                }}
+                aria-pressed={wordCount === n}
+                className={`px-2 py-1 rounded-sm transition-colors ${
+                  wordCount === n
+                    ? "text-main"
+                    : "hover:text-text hover:cursor-pointer"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
             <button
-              key={n}
               type="button"
               onClick={() => {
-                onWordCount(n);
-                setLastCustom((prev) => ({ ...prev, words: null }));
+                setCustomOpen((v) => !v);
+                setCustomStr("");
               }}
-              aria-pressed={wordCount === n}
+              aria-pressed={!words.includes(wordCount)}
               className={`px-2 py-1 rounded-sm transition-colors ${
-                wordCount === n
-                  ? "bg-main text-background"
-                  : "hover:bg-sub/20 hover:cursor-pointer text-sub"
+                !words.includes(wordCount)
+                  ? "text-main"
+                  : "hover:text-text hover:cursor-pointer"
               }`}
             >
-              {n}
+              {lastCustom.words !== null ? (
+                lastCustom.words
+              ) : (
+                <Wrench size={18} />
+              )}
             </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => {
-              setCustomOpen((v) => !v);
-              setCustomStr("");
-            }}
-            aria-pressed={!words.includes(wordCount)}
-            className={`px-2 py-1 rounded-sm transition-colors ${!words.includes(wordCount) ? "bg-main text-background" : "hover:bg-sub/20 hover:cursor-pointer text-sub"}`}
-          >
-            {lastCustom.words !== null ? (
-              lastCustom.words
-            ) : (
-              <Wrench size={18} />
-            )}
-          </button>
+          </div>
           <div
-            className={`overflow-hidden transition-all duration-200 ${customOpen && isWordsPanel ? "w-20 opacity-100" : "w-0 opacity-0"}`}
+            className={`overflow-hidden transition-all duration-200 ${
+              customOpen && isWordsPanel
+                ? "ml-3 w-20 opacity-100"
+                : "ml-0 w-0 opacity-0"
+            }`}
           >
             <input
               ref={wordsInputRef}

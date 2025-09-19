@@ -1,8 +1,19 @@
-import type { LetterStatus } from "@/hooks/useTypingGame";
-import { useLayoutEffect, useRef, useState } from "react";
+import type { LetterStatus, TestMode } from "@/hooks/useTypingGame";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import TypingCaret from "./TypingCaret";
 
-//TODO: добавть режимы в котором можно в печатаемый текст добавлять цифры и знаки припинания
+type WordListProps = {
+  words: string[];
+  statuses: LetterStatus[][];
+  extras: string[][];
+  currentWordIndex: number;
+  currentCharIndex: number;
+  started: boolean;
+  finished: boolean;
+  idle: boolean;
+  mode: TestMode;
+};
+
 export default function WordList({
   words,
   statuses,
@@ -12,16 +23,8 @@ export default function WordList({
   started,
   finished,
   idle,
-}: {
-  words: string[];
-  statuses: LetterStatus[][];
-  extras: string[][];
-  currentWordIndex: number;
-  currentCharIndex: number;
-  started: boolean;
-  finished: boolean;
-  idle: boolean;
-}) {
+  mode,
+}: WordListProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const wordsWrapRef = useRef<HTMLDivElement | null>(null);
   const firstWordRef = useRef<HTMLSpanElement | null>(null);
@@ -42,6 +45,15 @@ export default function WordList({
       measuredRef.current = true;
     }
   }, []);
+
+  const caretMetrics = useMemo(() => {
+    const extraCount = extras[currentWordIndex]?.length ?? 0;
+    const currentWord = words[currentWordIndex] ?? "";
+    const totalWords = words.length;
+    return { extraCount, currentWord, totalWords };
+  }, [extras, words, currentWordIndex]);
+
+  const { extraCount, currentWord, totalWords } = caretMetrics;
 
   // Auto-scroll by shifting words' margin-top when caret moves beyond second line
   useLayoutEffect(() => {
@@ -65,13 +77,7 @@ export default function WordList({
     if (relTop >= lh * 2) {
       setContentOffset((prev) => prev - lh);
     }
-  }, [
-    currentWordIndex,
-    currentCharIndex,
-    extras[currentWordIndex]?.length,
-    words.length,
-    words[currentWordIndex],
-  ]);
+  }, [currentWordIndex, currentCharIndex, extraCount, currentWord, totalWords]);
 
   // Reset content offset when test restarts (started becomes false with new words)
   useLayoutEffect(() => {
@@ -88,7 +94,7 @@ export default function WordList({
       <div
         id="words"
         ref={wordsWrapRef}
-        className="flex flex-wrap"
+        className={`flex flex-wrap ${mode === "words" ? "justify-start" : ""}`}
         style={{ marginTop: contentOffset }}
       >
         {words.map((word, wi) => {
@@ -153,9 +159,9 @@ export default function WordList({
         deps={[
           currentWordIndex,
           currentCharIndex,
-          extras[currentWordIndex]?.length ?? 0,
-          words[currentWordIndex],
-          words.length,
+          extraCount,
+          currentWord,
+          totalWords,
           contentOffset,
         ]}
         started={started}
