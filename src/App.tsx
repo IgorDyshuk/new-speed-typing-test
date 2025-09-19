@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Route, Routes, HashRouter } from "react-router-dom";
 import GamePage from "@/pages/GamePage.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./components/themeProvider";
@@ -10,11 +10,11 @@ function App() {
     <ThemeProvider defaultTheme="royal" storageKey="vite-ui-theme">
       <div className="bg-background leading-[250%]">
         <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
+          <HashRouter>
             <Routes>
               <Route path="/" element={<GamePage />} />
             </Routes>
-          </BrowserRouter>
+          </HashRouter>
         </QueryClientProvider>
       </div>
     </ThemeProvider>

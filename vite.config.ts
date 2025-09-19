@@ -5,7 +5,12 @@ import react from "@vitejs/plugin-react";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/new-speed-typing-test/",
   plugins: [react(), tailwindcss()],
+  build: {
+    outDir: "dist",
+    assetsDir: "assets",
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
