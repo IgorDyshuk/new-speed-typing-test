@@ -10,6 +10,8 @@ export default function TestConfig({
   onWordCount,
   mode,
   onModeChange,
+  withNumbers,
+  onToggleNumbers,
 }: {
   duration: number;
   onChangeDuration: (seconds: number) => void;
@@ -17,6 +19,8 @@ export default function TestConfig({
   onWordCount: (n: number) => void;
   mode: TestMode;
   onModeChange: (mode: TestMode) => void;
+  withNumbers: boolean;
+  onToggleNumbers: (value: boolean) => void;
 }) {
   const [customOpen, setCustomOpen] = useState(false);
   const [customStr, setCustomStr] = useState("");
@@ -139,7 +143,8 @@ export default function TestConfig({
       </button>
       <button
         type="button"
-        className={`flex items-center gap-0.5 hover:cursor-pointer`}
+        onClick={() => onToggleNumbers(!withNumbers)}
+        className={`flex items-center gap-0.5 hover:cursor-pointer ${withNumbers ? "text-main" : ""}`}
       >
         <Hash size={15} />
         numbers

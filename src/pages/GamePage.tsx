@@ -12,6 +12,7 @@ export default function GamePage() {
   const [duration, setDuration] = useState<number>(30);
   const [wordCount, setWordCount] = useState<number>(100);
   const [mode, setMode] = useState<TestMode>("time");
+  const [withNumbers, setWithNumbers] = useState(false);
   const {
     words,
     statuses,
@@ -28,7 +29,7 @@ export default function GamePage() {
     acc,
     wordsCompleted,
     totalWords,
-  } = useTypingGame(wordCount, duration, mode);
+  } = useTypingGame(wordCount, duration, mode, withNumbers);
 
   const [renderWords, setRenderWords] = useState(words);
   const [renderStatuses, setRenderStatuses] = useState(statuses);
@@ -189,6 +190,14 @@ export default function GamePage() {
               } else {
                 setWordCount(100);
               }
+              restart();
+              requestAnimationFrame(() => {
+                inputRef.current?.focus();
+              });
+            }}
+            withNumbers={withNumbers}
+            onToggleNumbers={(next) => {
+              setWithNumbers(next);
               restart();
               requestAnimationFrame(() => {
                 inputRef.current?.focus();

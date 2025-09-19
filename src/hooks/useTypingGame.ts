@@ -26,18 +26,32 @@ export default function useTypingGame(
   wordCount: number = 100,
   durationSeconds: number = 30,
   mode: TestMode = "time",
+  includeNumbers = false
 ) {
   const { t } = useTranslation();
 
   const dictionary = useMemo(() => t("text").split(" "), [t]);
 
+  const pickNumbers = () => {
+    const digits = Math.floor(Math.random() * 3) + 1
+    let value = ''
+    for (let i = 0; i < digits; i++) {
+      value += Math.floor(Math.random() * 10).toString()
+    }
+    return value
+  }
+
   const generateWords = useCallback((): string[] => {
     const res: string[] = [];
     for (let i = 0; i < wordCount; i++) {
-      res.push(dictionary[Math.floor(Math.random() * dictionary.length)]);
+      if (includeNumbers && Math.random() < 0.18) {
+        res.push(pickNumbers())
+      } else {
+        res.push(dictionary[Math.floor(Math.random() * dictionary.length)]);
+      }
     }
     return res;
-  }, [dictionary, wordCount]);
+  }, [dictionary, wordCount, includeNumbers]);
 
   const [state, setState] = useState<TypingState>(() => {
     const words = generateWords();
