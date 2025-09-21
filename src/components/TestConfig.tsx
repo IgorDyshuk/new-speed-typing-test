@@ -12,6 +12,8 @@ export default function TestConfig({
   onModeChange,
   withNumbers,
   onToggleNumbers,
+  withPunctuation,
+  onTogglePunctuation,
 }: {
   duration: number;
   onChangeDuration: (seconds: number) => void;
@@ -20,7 +22,9 @@ export default function TestConfig({
   mode: TestMode;
   onModeChange: (mode: TestMode) => void;
   withNumbers: boolean;
-  onToggleNumbers: (value: boolean) => void;
+  onToggleNumbers: (next: boolean) => void;
+  withPunctuation: boolean;
+  onTogglePunctuation: (next: boolean) => void;
 }) {
   const [customOpen, setCustomOpen] = useState(false);
   const [customStr, setCustomStr] = useState("");
@@ -136,7 +140,8 @@ export default function TestConfig({
     <div className="flex items-center gap-4 bg-sub-alt text-sub w-fit text-sm pl-8 pr-4 py-2 rounded-md">
       <button
         type="button"
-        className="flex items-center gap-0.5 hover:cursor-pointer"
+        onClick={() => onTogglePunctuation(!withPunctuation)}
+        className={`flex items-center gap-0.5 hover:cursor-pointer ${withPunctuation ? "text-main" : ""}`}
       >
         <AtSign size={14} className="pt-[2px]" />
         punctuations
@@ -174,7 +179,6 @@ export default function TestConfig({
         <CaseUpper size={24} className="pt-[5px]" /> words
       </button>
       <div className="w-2 h-6 bg-background rounded-2xl" />
-      {/* TODO: переделать переход с помощью затухания */}
       <div
         className={`relative min-h-[32px] min-w-[200px] flex-1 transition-opacity duration-150 ${
           panelPhase === "fade-out" ? "opacity-0" : "opacity-100"

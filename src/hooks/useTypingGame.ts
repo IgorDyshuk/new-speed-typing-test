@@ -4,8 +4,7 @@ import { useTranslation } from "react-i18next";
 export type LetterStatus = "pending" | "correct" | "incorrect";
 export type TestMode = "time" | "words";
 
-
-// TODO: переделать accuracy чтобы не считало побуквенно а по словам, чтобы если неправильно написал даже одну букву в слове то не считать слово неправилным полностью
+//TODO: починить китайский и японский язык
 export type TypingState = {
   words: string[];
   currentWordIndex: number;
@@ -26,11 +25,30 @@ export default function useTypingGame(
   wordCount: number = 100,
   durationSeconds: number = 30,
   mode: TestMode = "time",
-  includeNumbers = false
+  includeNumbers = false,
+  includePunctuation = false
 ) {
   const { t } = useTranslation();
 
   const dictionary = useMemo(() => t("text").split(" "), [t]);
+
+  const punctuationPool = ["...", ".", ",", "!", "?", ";", ":", "(", ")", "[", "]", "\""]
+  const pairedPunctuation = [
+    {open: "(", close: ")"},
+    {open: "[", close: "]"},
+    {open: "\"", close: "\""},
+  ]
+
+  const isClosingChar = (char: string) => 
+    pairedPunctuation.some((pair)=> pair.close === char)
+  
+  const findPairByOpen = (char: string) => 
+    pairedPunctuation.find((pair)=> pair.open === char)
+
+  const isPunctuation = (token: string) => punctuationPool.includes(token)
+
+  const pickPunctuation = () =>
+    punctuationPool[Math.floor(Math.random() * punctuationPool.length)]
 
   const pickNumbers = () => {
     const digits = Math.floor(Math.random() * 3) + 1
@@ -42,16 +60,86 @@ export default function useTypingGame(
   }
 
   const generateWords = useCallback((): string[] => {
-    const res: string[] = [];
-    for (let i = 0; i < wordCount; i++) {
+    const merged: string[] = []
+    const strongEndings = [".", "!", "?", "...", ";"];
+    let pendingWrap: {open: string; close: string} | null = null
+
+    while (merged.length < wordCount) {
+      let token: string
+
       if (includeNumbers && Math.random() < 0.18) {
-        res.push(pickNumbers())
+        token = pickNumbers()
+      } else if (includePunctuation && Math.random() < 0.24) {
+        token = pickPunctuation()
       } else {
-        res.push(dictionary[Math.floor(Math.random() * dictionary.length)]);
+        token = dictionary[Math.floor(Math.random() * dictionary.length)]
+      }
+
+      if (includePunctuation && isPunctuation(token)) {
+        if (isClosingChar(token)) {
+          continue
+        }
+
+        const pair = findPairByOpen(token)
+        if (pair) {
+          if (merged.length > 0) {
+            const lastWord = merged[merged.length - 1];
+            const endsWithStrong = strongEndings.some((ending) =>
+              lastWord.endsWith(ending),
+            );
+            if (endsWithStrong) {
+              pendingWrap = null;
+              continue;
+            }
+          }
+          pendingWrap = pair;
+          continue;
+        }
+
+
+        if (merged.length === 0) {
+          continue
+        }
+        const lastWord = merged[merged.length - 1];
+        const lastTail = lastWord.slice(-3);
+        const alreadyEndsWith = punctuationPool.some((ending) =>
+          lastTail.endsWith(ending),
+        );
+        if (alreadyEndsWith) continue;
+        
+        merged[merged.length - 1] += token
+        continue
+      }
+      
+      if (pendingWrap) {
+        token = pendingWrap.open + token + pendingWrap.close
+        pendingWrap = null
+      }
+      merged.push(token)
+      
+      for (let i = 0; i < merged.length-1; i++) {
+        const current = merged[i]
+        const next = merged[i+1]
+        if (!next) continue
+
+        const endsWithStrong = strongEndings.some((ending)=>
+          current.endsWith(ending)
+        )
+        if (!endsWithStrong) continue
+        merged[i + 1] = next.charAt(0).toUpperCase() + next.slice(1)
+      }
+
+    }
+
+    if (includePunctuation && merged.length > 0) {
+      const first = merged[0]
+      if (first && first.length > 0) {
+        merged[0] = first.charAt(0).toUpperCase() + first.slice(1)
       }
     }
-    return res;
-  }, [dictionary, wordCount, includeNumbers]);
+
+    return merged
+  }, [dictionary, wordCount, includeNumbers, includePunctuation])
 
   const [state, setState] = useState<TypingState>(() => {
     const words = generateWords();
@@ -90,7 +178,7 @@ export default function useTypingGame(
     setTimeLeft(durationSeconds);
     setFinished(false);
     setElapsedMs(0);
-  }, [generateWords, durationSeconds]);
+  }, [generateWords, durationSeconds, includeNumbers, includePunctuation]);
 
   const restart = useCallback(() => {
     const words = generateWords();
