@@ -1,10 +1,15 @@
+import i18n from "@/i18n";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+
+//TODO: исправить вспышку при загрузке страницы
 
 export type LetterStatus = "pending" | "correct" | "incorrect";
 export type TestMode = "time" | "words";
 
 //TODO: починить китайский и японский язык
+
 export type TypingState = {
   words: string[];
   currentWordIndex: number;
@@ -30,25 +35,59 @@ export default function useTypingGame(
 ) {
   const { t } = useTranslation();
 
-  const dictionary = useMemo(() => t("text").split(" "), [t]);
+  const dictionary = useMemo(() => {
+    const text = t("text")
+    if (["zh", "ja"].includes(i18n.language))  {
+      return text.split("")
+    }
+    return text.split(" ")
+  }, [t, i18n.language])
 
-  const punctuationPool = ["...", ".", ",", "!", "?", ";", ":", "(", ")", "[", "]", "\""]
-  const pairedPunctuation = [
-    {open: "(", close: ")"},
-    {open: "[", close: "]"},
-    {open: "\"", close: "\""},
+  const punctuationOptions = [
+    {token: ".", weight: 0.5},
+    {token: ",", weight: 0.85},
+    {token: "?", weight: 0.25},
+    {token: "!", weight: 0.25},
+    {token: "...", weight: 0.1},
+    {token: ":", weight: 0.15},
+    {token: "(", weight: 0.2},
+    {token: "'", weight: 0.2},
+    {token: "\"", weight: 0.2},
   ]
+  
+  const pairedPunctuation = [
+    { open: "(", close: ")" },
+    { open: "[", close: "]" },
+    { open: "\"", close: "\"" },
+    { open: "'", close: "'" },
+  ];
+
+  const pickedWeighted = <T extends {weight: number}>(options: T[]): T => {
+    const total = options.reduce((sum, opt) => sum + opt.weight, 0) 
+    let r = Math.random() * total
+    for (const opt of options) {
+      r -= opt.weight
+      if (r <= 0) return opt
+    }
+    return options[options.length - 1]
+  }
+  
+  const punctuationPool = punctuationOptions
+    .map((opt) => opt.token)
+    .concat(pairedPunctuation.map((pair) => pair.close));
 
   const isClosingChar = (char: string) => 
-    pairedPunctuation.some((pair)=> pair.close === char)
+    pairedPunctuation.some(
+      (pair) => pair.close === char && pair.open !== char,
+    )
   
-  const findPairByOpen = (char: string) => 
-    pairedPunctuation.find((pair)=> pair.open === char)
+  const findPairByOpen = (char: string) =>
+    pairedPunctuation.find((pair) => pair.open === char);
 
   const isPunctuation = (token: string) => punctuationPool.includes(token)
 
   const pickPunctuation = () =>
-    punctuationPool[Math.floor(Math.random() * punctuationPool.length)]
+    pickedWeighted(punctuationOptions).token
 
   const pickNumbers = () => {
     const digits = Math.floor(Math.random() * 3) + 1
@@ -61,10 +100,18 @@ export default function useTypingGame(
 
   const generateWords = useCallback((): string[] => {
     const merged: string[] = []
+    let wordsSinceStrong = 0
+
     const strongEndings = [".", "!", "?", "...", ";"];
     let pendingWrap: {open: string; close: string} | null = null
 
     while (merged.length < wordCount) {
+      while(merged.length === 0) {
+        const token = dictionary[Math.floor(Math.random() * dictionary.length)]
+        merged.push(token)
+        wordsSinceStrong = 1
+      }
+
       let token: string
 
       if (includeNumbers && Math.random() < 0.18) {
@@ -82,6 +129,9 @@ export default function useTypingGame(
 
         const pair = findPairByOpen(token)
         if (pair) {
+
+          if (merged.length === 0) continue
+
           if (merged.length > 0) {
             const lastWord = merged[merged.length - 1];
             const endsWithStrong = strongEndings.some((ending) =>
@@ -107,7 +157,15 @@ export default function useTypingGame(
         );
         if (alreadyEndsWith) continue;
         
+        const isStrong = strongEndings.includes(token)
+        if (isStrong && wordsSinceStrong < 3) {
+          continue
+        }
+
         merged[merged.length - 1] += token
+        if (isStrong) {
+          wordsSinceStrong = 0
+        }
         continue
       }
       
@@ -116,6 +174,7 @@ export default function useTypingGame(
         pendingWrap = null
       }
       merged.push(token)
+      wordsSinceStrong += 1
       
       for (let i = 0; i < merged.length-1; i++) {
         const current = merged[i]
@@ -268,6 +327,26 @@ export default function useTypingGame(
       setFinished(true);
     }
   }, [mode, finished, wordsCompleted, totalWords]);
+
+  // const navigate = useNavigate()
+
+  // useEffect(()=>{
+  //   if (!finished) return
+  //   navigate("/results", {
+  //     state: {
+  //       summary: {
+  //         wpm,
+  //         acc,
+  //         wordsCompleted,
+  //         totalWords,
+  //         durationSeconds,
+  //         mode,
+  //         includeNumbers,
+  //         includePunctuation
+  //       }
+  //     }
+  //   })
+  // }, [finished, navigate, wpm, acc, wordsCompleted, totalWords, durationSeconds, includeNumbers, includePunctuation])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {

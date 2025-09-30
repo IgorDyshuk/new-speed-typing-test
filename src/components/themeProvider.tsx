@@ -62,9 +62,15 @@ export function ThemeProvider({
   );
 
   const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem(storageKey);
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
     const initial = isValidTheme(saved) ? saved : defaultTheme;
-    return themes.includes(initial) ? initial : themes[0];
+    const applied = themes.includes(initial) ? initial : themes[0];
+
+    if (typeof window !== "undefined") {
+      document.documentElement.setAttribute("data-theme", applied);
+    }
+    return applied;
   });
 
   useEffect(() => {
