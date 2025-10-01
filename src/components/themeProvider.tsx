@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useThemeStore } from "@/store/useThemeStore";
+import { createContext, useContext, useEffect, useMemo } from "react";
 
 export const ALL_THEMES = [
   "royal",
@@ -42,14 +43,8 @@ export type ThemeProviderState = {
 
 const ThemeContext = createContext<ThemeProviderState | undefined>(undefined);
 
-function isValidTheme(x: any): x is Theme {
-  return typeof x === "string" && (ALL_THEMES as readonly string[]).includes(x);
-}
-
-//TODO: Добавить стейст-менеджер зюстанд и с помощью его запонминать какакя тема выбрана была выбрана последняя и вставлять ее при повторном открытии страницы
 export function ThemeProvider({
   children,
-  defaultTheme = "royal",
   storageKey = "vite-ui-theme",
   availableThemes,
 }: ThemeProviderProps) {
@@ -61,22 +56,13 @@ export function ThemeProvider({
     [availableThemes],
   );
 
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const saved =
-      typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
-    const initial = isValidTheme(saved) ? saved : defaultTheme;
-    const applied = themes.includes(initial) ? initial : themes[0];
-
-    if (typeof window !== "undefined") {
-      document.documentElement.setAttribute("data-theme", applied);
-    }
-    return applied;
-  });
+  const theme = useThemeStore((state) => state.theme);
+  const setThemeInStore = useThemeStore((state) => state.setTheme);
 
   useEffect(() => {
     if (!themes.includes(theme)) {
       const next = themes[0];
-      setThemeState(next);
+      setThemeInStore(next);
       localStorage.setItem(storageKey, next);
       document.documentElement.setAttribute("data-theme", next);
     }
@@ -92,7 +78,7 @@ export function ThemeProvider({
       setTheme: (t: Theme) => {
         if (!themes.includes(t)) return;
         localStorage.setItem(storageKey, t);
-        setThemeState(t);
+        setThemeInStore(t);
       },
       themes,
     }),

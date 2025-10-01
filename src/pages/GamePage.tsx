@@ -3,17 +3,45 @@ import { LangChoice } from "@/components/LangChoice.tsx";
 import { ThemeChoice } from "@/components/ThemeChoice";
 import CountdownTimer from "@/components/CountdownTimer";
 import RestartButton from "@/components/restartButton/RestartButton.tsx";
-import useTypingGame, { type TestMode } from "@/hooks/useTypingGame";
+import useTypingGame from "@/hooks/useTypingGame";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ModalBlur from "@/components/ModalBlur";
 import TestConfig from "@/components/TestConfig";
+import {
+  defaultSettings,
+  useGameSettingsStore,
+} from "@/store/useGameSettingsStore";
 
 export default function GamePage() {
-  const [duration, setDuration] = useState<number>(30);
-  const [wordCount, setWordCount] = useState<number>(100);
-  const [mode, setMode] = useState<TestMode>("time");
-  const [withNumbers, setWithNumbers] = useState(false);
-  const [withPunctuation, setWithPunctuation] = useState(false);
+  const SESSION_FLAG = "typing-test-first-visit";
+
+  const {
+    duration,
+    wordCount,
+    mode,
+    withNumbers,
+    withPunctuation,
+    setDuration,
+    setWordCount,
+    setMode,
+    setWithNumbers,
+    setWithPunctuation,
+  } = useGameSettingsStore();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const hasVisited = window.sessionStorage.getItem(SESSION_FLAG);
+    if (hasVisited) return;
+
+    setDuration(defaultSettings.duration);
+    setWordCount(defaultSettings.wordCount);
+    setMode(defaultSettings.mode);
+    setWithNumbers(defaultSettings.withNumbers);
+    setWithPunctuation(defaultSettings.withPunctuation);
+    window.sessionStorage.setItem(SESSION_FLAG, "1");
+  }, [setDuration, setWordCount, setMode, setWithNumbers, setWithPunctuation]);
+
   const {
     words,
     statuses,
@@ -186,11 +214,7 @@ export default function GamePage() {
             mode={mode}
             onModeChange={(nextMode) => {
               setMode(nextMode);
-              if (nextMode === "words") {
-                setWordCount((prev) => (prev === 100 ? prev : 100));
-              } else {
-                setWordCount(100);
-              }
+              setWordCount(100);
               restart();
               requestAnimationFrame(() => {
                 inputRef.current?.focus();
