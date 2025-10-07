@@ -5,8 +5,69 @@
     <link rel="icon" type="image/svg+xml" href="/new-speed-typing-test/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React + TS</title>
-    <script type="module" crossorigin src="/new-speed-typing-test/assets/index-Bwqo8K2u.js"></script>
-    <link rel="stylesheet" crossorigin href="/new-speed-typing-test/assets/index-B7DRyOXB.css">
+    <script>
+      (function () {
+        const fallbackTheme = "royal";
+        const themeBackgrounds = {
+          royal: "#241963",
+          ocean: "#021f34",
+          slate: "#212121",
+          "classic-light": "#ffffff",
+          "nord-light": "#eceff4",
+          grayscale: "#eeeeee",
+          lavender: "#ebe1ef",
+          "mono-dark": "#f5f5f5",
+          military: "#7c878e",
+          sage: "#727474",
+          "pastel-pink": "#4a5b6e",
+          "violet-steel": "#525252",
+          "sunrise-sea": "#3b4a62",
+          "one-dark": "#2f343f",
+          moonlight: "#2a273f",
+          everforest: "#2c2e34",
+          galaxy: "#221b44",
+          "nord-dark": "#242933",
+          cyberpunk: "#212135",
+          "neon-dream": "#1b1d36",
+          "solarized-dark": "#002b36",
+          midnight: "#18181a",
+        };
+
+        const ensureBackgroundStyles = () => {
+          if (document.head.querySelector("style[data-initial-theme]")) return;
+          const style = document.createElement("style");
+          style.setAttribute("data-initial-theme", "");
+          let css = `html, body { background-color: ${themeBackgrounds[fallbackTheme]}; }\n`;
+          for (const [name, color] of Object.entries(themeBackgrounds)) {
+            css += `html[data-theme="${name}"], html[data-theme="${name}"] body { background-color: ${color}; }\n`;
+          }
+          style.textContent = css;
+          document.head.appendChild(style);
+        };
+
+        try {
+          const raw = localStorage.getItem("typing-test-theme");
+          let theme = fallbackTheme;
+
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            const storedTheme = parsed && parsed.state && parsed.state.theme;
+            if (typeof storedTheme === "string") {
+              theme = storedTheme;
+            }
+          }
+
+          ensureBackgroundStyles();
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (error) {
+          console.error("Failed to apply stored theme", error);
+          ensureBackgroundStyles();
+          document.documentElement.setAttribute("data-theme", fallbackTheme);
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/new-speed-typing-test/assets/index-Cxpocpyz.js"></script>
+    <link rel="stylesheet" crossorigin href="/new-speed-typing-test/assets/index-BstyGMxl.css">
   </head>
   <body>
     <div id="root"></div>
