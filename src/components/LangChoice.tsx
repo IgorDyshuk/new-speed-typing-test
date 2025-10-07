@@ -14,7 +14,6 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguageStore } from "@/store/useLanguageStore";
 
-//TODO: Добавить стейст-менеджер зюстанд и с помощью его запонминать какакя язык был выбран последний и вставлять его при повторном открытии страницы
 export function LangChoice({
   onCloseFucusTyping,
 }: {

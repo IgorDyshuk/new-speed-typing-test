@@ -3,8 +3,9 @@ import { LangChoice } from "@/components/LangChoice.tsx";
 import { ThemeChoice } from "@/components/ThemeChoice";
 import CountdownTimer from "@/components/CountdownTimer";
 import RestartButton from "@/components/restartButton/RestartButton.tsx";
-import useTypingGame from "@/hooks/useTypingGame";
+import useTypingGame, { type LetterStatus } from "@/hooks/useTypingGame";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import ModalBlur from "@/components/ModalBlur";
 import TestConfig from "@/components/TestConfig";
 import {
@@ -54,18 +55,17 @@ export default function GamePage() {
     started,
     timeLeft,
     finished,
-    wpm,
-    acc,
     wordsCompleted,
     totalWords,
   } = useTypingGame(wordCount, duration, mode, withNumbers, withPunctuation);
 
-  const [renderWords, setRenderWords] = useState(words);
-  const [renderStatuses, setRenderStatuses] = useState(statuses);
-  const [renderExtras, setRenderExtras] = useState(extras);
-  const [wordsPhase, setWordsPhase] = useState<"idle" | "fade-out" | "fade-in">(
-    "idle",
-  );
+  const [renderWords, setRenderWords] = useState<string[]>([]);
+  const [renderStatuses, setRenderStatuses] = useState<LetterStatus[][]>([]);
+  const [renderExtras, setRenderExtras] = useState<string[][]>([]);
+  const [wordsPhase, setWordsPhase] = useState<
+    "initial" | "idle" | "fade-out" | "fade-in"
+  >("initial");
+  const hasMountedRef = useRef(false);
   const fadeOutTimeoutRef = useRef<number | null>(null);
   const fadeInTimeoutRef = useRef<number | null>(null);
   const WORDS_FADE_MS = 140;
@@ -77,6 +77,15 @@ export default function GamePage() {
   );
 
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      setRenderWords(words);
+      setRenderStatuses(statuses);
+      setRenderExtras(extras);
+      setWordsPhase("fade-in");
+      return;
+    }
+
     if (wordsMatch(renderWords, words)) {
       setRenderStatuses(statuses);
       setRenderExtras(extras);
@@ -191,7 +200,7 @@ export default function GamePage() {
       <main className="flex items-center flex-col">
         <div
           className={`transition-opacity duration-300 ${
-            !started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"
+            !started ? "opacity-100" : "opacity-0"
           }`}
         >
           <TestConfig
@@ -241,7 +250,9 @@ export default function GamePage() {
         <div
           id="typingTest"
           className={`relative pt-75 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
-            wordsPhase === "fade-out" ? "opacity-0" : "opacity-100"
+            wordsPhase === "fade-out" || wordsPhase === "initial"
+              ? "opacity-0"
+              : "opacity-100"
           }`}
         >
           <div className="grid grid-cols-3 items-center w-full">
@@ -265,7 +276,7 @@ export default function GamePage() {
               )}
             </div>
             <div
-              className={`justify-self-center transition-opacity duration-300 ${!started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"}`}
+              className={`justify-self-center transition-opacity duration-300 ${!started ? "opacity-100" : "opacity-0"}`}
             >
               <LangChoice
                 onCloseFucusTyping={() =>
@@ -330,20 +341,9 @@ export default function GamePage() {
             <RestartButton />
           </div>
         </div>
-
-        <div
-          className={`relative z-10 mt-4 flex items-center gap-6 text-sub transition-opacity duration-300 ${finished ? "opacity-100" : "opacity-0"}`}
-        >
-          <div className="text-lg font-medium">
-            WPM: <span className="text-text">{Math.round(wpm)}</span>
-          </div>
-          <div className="text-lg font-medium">
-            ACC: <span className="text-text">{Math.round(acc)}%</span>
-          </div>
-        </div>
       </main>
       <div
-        className={`mt-55 transition-opacity duration-300 ${!started ? "opacity-100" : finished ? "opacity-100" : "opacity-0"}`}
+        className={`mt-55 transition-opacity duration-300 ${!started ? "opacity-100" : "opacity-0"}`}
       >
         <ThemeChoice
           onCloseFucusTyping={() =>

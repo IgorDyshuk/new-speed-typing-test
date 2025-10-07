@@ -3,8 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-//TODO: исправить вспышку при загрузке страницы
-
+// TODO: сделать оптимизацию хука
 export type LetterStatus = "pending" | "correct" | "incorrect";
 export type TestMode = "time" | "words";
 
@@ -328,25 +327,25 @@ export default function useTypingGame(
     }
   }, [mode, finished, wordsCompleted, totalWords]);
 
-  // const navigate = useNavigate()
+  const navigate = useNavigate()
 
-  // useEffect(()=>{
-  //   if (!finished) return
-  //   navigate("/results", {
-  //     state: {
-  //       summary: {
-  //         wpm,
-  //         acc,
-  //         wordsCompleted,
-  //         totalWords,
-  //         durationSeconds,
-  //         mode,
-  //         includeNumbers,
-  //         includePunctuation
-  //       }
-  //     }
-  //   })
-  // }, [finished, navigate, wpm, acc, wordsCompleted, totalWords, durationSeconds, includeNumbers, includePunctuation])
+  useEffect(()=>{
+    if (!finished) return
+    navigate("/results", {
+      state: {
+        summary: {
+          wpm,
+          acc,
+          wordsCompleted,
+          totalWords,
+          durationSeconds,
+          mode,
+          includeNumbers,
+          includePunctuation
+        }
+      }
+    })
+  }, [finished, navigate, wpm, acc, wordsCompleted, totalWords, durationSeconds, includeNumbers, includePunctuation])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
