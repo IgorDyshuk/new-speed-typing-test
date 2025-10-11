@@ -285,33 +285,52 @@ export default function useTypingGame(
   }, [started, finished]);
 
   // Derived results: words per minute (wpm) and accuracy (acc)
-  const { wpm, acc } = useMemo(() => {
-    let typed = 0;
+    const {
+    wpm,
+    acc,
+    correctLetters,
+    incorrectLetters,
+    extraLetters,
+    totalTyped,
+  } = useMemo(() => {
     let correct = 0;
+    let incorrect = 0;
+    let extrasCount = 0;
+
     for (let wi = 0; wi < state.statuses.length; wi++) {
       const row = state.statuses[wi];
       for (let i = 0; i < row.length; i++) {
         const st = row[i];
-        if (st !== "pending") typed++;
         if (st === "correct") correct++;
+        else if (st === "incorrect") incorrect++;
       }
-    }
-    for (let wi = 0; wi < state.extras.length; wi++) {
-      typed += state.extras[wi].length;
     }
 
-    const elapsedSec = (() => {
-      if (mode === "time") {
-        return Math.max(0, Math.min(durationSeconds, elapsedMs / 1000));
-      }
-      return elapsedMs / 1000;
-    })();
+    for (let wi = 0; wi < state.extras.length; wi++) {
+      extrasCount += state.extras[wi].length;
+    }
+
+    const typed = correct + incorrect + extrasCount;
+
+    const elapsedSec =
+      mode === "time"
+        ? Math.max(0, Math.min(durationSeconds, elapsedMs / 1000))
+        : elapsedMs / 1000;
 
     const minutes = elapsedSec > 0 ? elapsedSec / 60 : 0;
     const wpmValue = minutes > 0 ? (correct / 5) / minutes : 0;
     const accValue = typed > 0 ? (correct / typed) * 100 : 100;
-    return { wpm: wpmValue, acc: accValue };
+
+    return {
+      wpm: wpmValue,
+      acc: accValue,
+      correctLetters: correct,
+      incorrectLetters: incorrect,
+      extraLetters: extrasCount,
+      totalTyped: typed,
+    };
   }, [state.statuses, state.extras, elapsedMs, mode, durationSeconds]);
+
 
   const wordsCompleted = useMemo(() => {
     return state.statuses.reduce((total, row) => {
@@ -328,9 +347,10 @@ export default function useTypingGame(
   }, [mode, finished, wordsCompleted, totalWords]);
 
   const navigate = useNavigate()
+  const totalSeconds = elapsedMs / 1000
 
   useEffect(()=>{
-    if (!finished) return
+    if (!finished) return    
     navigate("/results", {
       state: {
         summary: {
@@ -341,11 +361,17 @@ export default function useTypingGame(
           durationSeconds,
           mode,
           includeNumbers,
-          includePunctuation
+          includePunctuation,
+          totalSeconds,
+          correctLetters,
+          incorrectLetters,
+          extraLetters,
+          totalTyped,
+          language: i18n.language
         }
       }
     })
-  }, [finished, navigate, wpm, acc, wordsCompleted, totalWords, durationSeconds, includeNumbers, includePunctuation])
+  }, [finished, navigate, wpm, acc, wordsCompleted, totalWords, durationSeconds, includeNumbers, includePunctuation, i18n.language])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {

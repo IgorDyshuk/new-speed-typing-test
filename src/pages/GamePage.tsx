@@ -5,7 +5,6 @@ import CountdownTimer from "@/components/CountdownTimer";
 import RestartButton from "@/components/restartButton/RestartButton.tsx";
 import useTypingGame, { type LetterStatus } from "@/hooks/useTypingGame";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import ModalBlur from "@/components/ModalBlur";
 import TestConfig from "@/components/TestConfig";
 import {
@@ -195,7 +194,7 @@ export default function GamePage() {
   }, [restart]);
 
   return (
-    <div className="px-30 bg-background h-screen">
+    <div className="px-45 bg-background h-screen">
       {/* <header></header> */}
       <main className="flex items-center flex-col">
         <div
