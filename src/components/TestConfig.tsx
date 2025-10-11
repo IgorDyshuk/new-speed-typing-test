@@ -29,15 +29,14 @@ export default function TestConfig({
 }) {
   const [customOpen, setCustomOpen] = useState(false);
   const [customStr, setCustomStr] = useState("");
-  const [lastCustom, setLastCustom] = useState<{
-    time: number | null;
-    words: number | null;
-  }>({
-    time: null,
-    words: null,
-  });
+
   const words = [10, 25, 50, 100];
   const times = [10, 30, 60, 120];
+
+  const isCustomTimeValue = !times.includes(duration);
+  const customTimeLabel = isCustomTimeValue ? duration : null;
+  const isCustomWordValue = !words.includes(wordCount);
+  const customWordLabel = isCustomWordValue ? wordCount : null;
 
   const [displayMode, setDisplayMode] = useState<TestMode>(mode);
   const [panelPhase, setPanelPhase] = useState<"idle" | "fade-out" | "fade-in">(
@@ -124,13 +123,9 @@ export default function TestConfig({
     const s = parseInt(customStr.trim(), 10);
     if (!Number.isNaN(s) && s > 0) {
       if (isTimePanel) {
-        const isPreset = times.includes(s);
         onChangeDuration(s);
-        setLastCustom((prev) => ({ ...prev, time: isPreset ? null : s }));
       } else {
-        const isPreset = words.includes(s);
         onWordCount(s);
-        setLastCustom((prev) => ({ ...prev, words: isPreset ? null : s }));
       }
       setCustomOpen(false);
       setCustomStr("");
@@ -193,7 +188,6 @@ export default function TestConfig({
                 type="button"
                 onClick={() => {
                   onChangeDuration(t);
-                  setLastCustom((prev) => ({ ...prev, time: null }));
                 }}
                 aria-pressed={duration === t}
                 className={`px-2 py-1 rounded-sm transition-colors ${
@@ -218,11 +212,7 @@ export default function TestConfig({
                   : "hover:text-text hover:cursor-pointer"
               }`}
             >
-              {lastCustom.time !== null ? (
-                lastCustom.time
-              ) : (
-                <Wrench size={18} />
-              )}
+              {customTimeLabel ?? <Wrench size={18} />}
             </button>
           </div>
           <div
@@ -257,7 +247,6 @@ export default function TestConfig({
                 type="button"
                 onClick={() => {
                   onWordCount(n);
-                  setLastCustom((prev) => ({ ...prev, words: null }));
                 }}
                 aria-pressed={wordCount === n}
                 className={`px-2 py-1 rounded-sm transition-colors ${
@@ -282,11 +271,7 @@ export default function TestConfig({
                   : "hover:text-text hover:cursor-pointer"
               }`}
             >
-              {lastCustom.words !== null ? (
-                lastCustom.words
-              ) : (
-                <Wrench size={18} />
-              )}
+              {customWordLabel ?? <Wrench size={18} />}
             </button>
           </div>
           <div
