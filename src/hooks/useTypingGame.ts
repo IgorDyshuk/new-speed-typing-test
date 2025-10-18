@@ -214,6 +214,8 @@ export default function useTypingGame(
   const [timeLeft, setTimeLeft] = useState(durationSeconds);
   const [finished, setFinished] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
+  const [historicalMistakes, setHistoricalMistakes] = useState(0);
+  const correctHistoricalMistakes = Math.floor(historicalMistakes / 2)
 
   const isWordsGameComplete = useCallback(
     (draft: TypingState) => {
@@ -236,6 +238,7 @@ export default function useTypingGame(
     setTimeLeft(durationSeconds);
     setFinished(false);
     setElapsedMs(0);
+    setHistoricalMistakes(0);
   }, [generateWords, durationSeconds, includeNumbers, includePunctuation]);
 
   const restart = useCallback(() => {
@@ -251,6 +254,7 @@ export default function useTypingGame(
     setTimeLeft(durationSeconds);
     setFinished(false);
     setElapsedMs(0);
+    setHistoricalMistakes(0);
   }, [generateWords, durationSeconds]);
 
   useEffect(() => {
@@ -258,6 +262,7 @@ export default function useTypingGame(
     setFinished(false);
     setTimeLeft(durationSeconds);
     setElapsedMs(0);
+    setHistoricalMistakes(0);
   }, [durationSeconds, mode]);
 
   useEffect(() => {
@@ -319,7 +324,9 @@ export default function useTypingGame(
 
     const minutes = elapsedSec > 0 ? elapsedSec / 60 : 0;
     const wpmValue = minutes > 0 ? (correct / 5) / minutes : 0;
-    const accValue = typed > 0 ? (correct / typed) * 100 : 100;
+    const correctWithHistorical = correct - correctHistoricalMistakes;
+    const accValue =
+      typed > 0 ? (correctWithHistorical / typed) * 100 : 100;
 
     return {
       wpm: wpmValue,
@@ -329,7 +336,7 @@ export default function useTypingGame(
       extraLetters: extrasCount,
       totalTyped: typed,
     };
-  }, [state.statuses, state.extras, elapsedMs, mode, durationSeconds]);
+  }, [state.statuses, state.extras, elapsedMs, mode, durationSeconds, historicalMistakes]);
 
 
   const wordsCompleted = useMemo(() => {
@@ -346,8 +353,8 @@ export default function useTypingGame(
     }
   }, [mode, finished, wordsCompleted, totalWords]);
 
-  const navigate = useNavigate()
-  const totalSeconds = elapsedMs / 1000
+  const navigate = useNavigate();
+  const totalSeconds = elapsedMs / 1000;
 
   useEffect(()=>{
     if (!finished) return    
@@ -367,11 +374,29 @@ export default function useTypingGame(
           incorrectLetters,
           extraLetters,
           totalTyped,
+          historicalMistakes: correctHistoricalMistakes,
           language: i18n.language
         }
       }
     })
-  }, [finished, navigate, wpm, acc, wordsCompleted, totalWords, durationSeconds, includeNumbers, includePunctuation, i18n.language])
+  }, [
+    finished,
+    navigate,
+    wpm,
+    acc,
+    wordsCompleted,
+    totalWords,
+    durationSeconds,
+    includeNumbers,
+    includePunctuation,
+    totalSeconds,
+    correctLetters,
+    incorrectLetters,
+    extraLetters,
+    totalTyped,
+    historicalMistakes,
+    i18n.language,
+  ]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -560,7 +585,11 @@ export default function useTypingGame(
           if (!started) setStarted(true);
           const expected = currentWord[currentCharIndex] ?? "";
           if (currentCharIndex < currentWord.length) {
-            wordStatuses[currentCharIndex] = key === expected ? "correct" : "incorrect";
+            const isCorrect = key === expected;
+            wordStatuses[currentCharIndex] = isCorrect ? "correct" : "incorrect";
+            if (!isCorrect) {
+              setHistoricalMistakes((prev) => prev + 1);
+            }
             return finalize({
               words,
               currentWordIndex,
@@ -570,6 +599,7 @@ export default function useTypingGame(
             });
           }
           wordExtras.push(key);
+          setHistoricalMistakes((prev) => prev + 1);
           return finalize({
             words,
             currentWordIndex,
@@ -620,6 +650,10 @@ export default function useTypingGame(
         }
         return draft;
       };
+
+      if (isLetter) {
+        return;
+      }
 
       setState((prev) => {
         const { words, currentWordIndex, currentCharIndex } = prev;
@@ -824,5 +858,6 @@ export default function useTypingGame(
     acc,
     wordsCompleted,
     totalWords,
+    historicalMistakes,
   };
 }

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 type TestMode = "time" | "words";
 
-// TODO: при возвращении на страницу не показывает кастомное время или кол. слов а просто подсвечивает гаечный ключ
+// TODO: добавить ограницчение на кастомные инпуты (минимальное значение должно быть 2, при неккоректном вводе показывать замечание через уведомление)
 export default function TestConfig({
   duration,
   onChangeDuration,

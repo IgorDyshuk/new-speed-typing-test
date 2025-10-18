@@ -12,6 +12,8 @@ import {
   useGameSettingsStore,
 } from "@/store/useGameSettingsStore";
 
+// TODO: добавить уведомления и показывать смешные уведы раз на много игр
+// TODO: поменять шрифт всей страницы
 export default function GamePage() {
   const SESSION_FLAG = "typing-test-first-visit";
 

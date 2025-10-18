@@ -8,12 +8,14 @@
 }
 
 .tooltip::before {
+    width: fit-content;
     content: attr(data-tooltip);
     position: absolute;
     top: var(--tooltip-before-top, 0);
     left: 50%;
     transform: translate(-50%, 10px);
     font-size: 1.1rem;
+    line-height: 1.15rem;
     white-space: nowrap;
     color: white;
     background-color: black;

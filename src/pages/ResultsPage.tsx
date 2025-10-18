@@ -2,6 +2,7 @@ import RestartButton from "@/components/restartButton/RestartButton";
 import Tooltip from "@/components/tooltip/Tooltip";
 import { useLocation, useNavigate } from "react-router-dom";
 
+// TODO: добавить посекугндный график
 export default function ResultsPage() {
   const navigate = useNavigate();
   const { state } = useLocation() as {
@@ -20,6 +21,7 @@ export default function ResultsPage() {
         correctLetters: number;
         incorrectLetters: number;
         extraLetters: number;
+        historicalMistakes: number;
         language: string;
       };
     };
@@ -73,9 +75,9 @@ export default function ResultsPage() {
               </p>
             </Tooltip>
             <Tooltip
-              label={`${summary.acc.toFixed(2)}%`}
-              wrap={false}
-              beforeTop={-10}
+              label={`${summary.acc.toFixed(2)}% ${summary.correctLetters}_correct ${summary.historicalMistakes}_incorrect`}
+              wrap={true}
+              beforeTop={-49}
               afterTop={15}
             >
               <h3 className="text-[2rem] leading-[1.5rem]"> acc </h3>
@@ -105,14 +107,14 @@ export default function ResultsPage() {
             <Tooltip
               label="all-typed correct incorrect extra"
               wrap={true}
-              beforeTop={-72}
+              beforeTop={-80}
               afterTop={1}
             >
               <p className="pb-2">characters</p>
               <p className="text-main text-[2rem]">
-                {Math.round(summary.totalTyped)}/
-                {Math.round(summary.correctLetters)}/
-                {Math.round(summary.incorrectLetters)}/
+                {Math.round(summary.totalTyped)} /{" "}
+                {Math.round(summary.correctLetters)} /{" "}
+                {Math.round(summary.incorrectLetters)} /{" "}
                 {Math.round(summary.extraLetters)}
               </p>
             </Tooltip>
