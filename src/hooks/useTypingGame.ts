@@ -215,6 +215,9 @@ export default function useTypingGame(
   const [finished, setFinished] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [historicalMistakes, setHistoricalMistakes] = useState(0);
+  const [wpmSamples, setWpmSamples] = useState<number[]>([])
+
+  //TODO: убарть двоеное начисление в хуке, и убрать деление
   const correctHistoricalMistakes = Math.floor(historicalMistakes / 2)
 
   const isWordsGameComplete = useCallback(
@@ -239,6 +242,7 @@ export default function useTypingGame(
     setFinished(false);
     setElapsedMs(0);
     setHistoricalMistakes(0);
+    setWpmSamples([]);
   }, [generateWords, durationSeconds, includeNumbers, includePunctuation]);
 
   const restart = useCallback(() => {
@@ -255,6 +259,7 @@ export default function useTypingGame(
     setFinished(false);
     setElapsedMs(0);
     setHistoricalMistakes(0);
+    setWpmSamples([]);
   }, [generateWords, durationSeconds]);
 
   useEffect(() => {
@@ -263,6 +268,7 @@ export default function useTypingGame(
     setTimeLeft(durationSeconds);
     setElapsedMs(0);
     setHistoricalMistakes(0);
+    setWpmSamples([]);
   }, [durationSeconds, mode]);
 
   useEffect(() => {
@@ -338,6 +344,28 @@ export default function useTypingGame(
     };
   }, [state.statuses, state.extras, elapsedMs, mode, durationSeconds, historicalMistakes]);
 
+  const elapsedSeconds = useMemo(
+    () => Math.floor( elapsedMs / 1000),
+    [elapsedMs]
+  )
+
+  useEffect(() => {
+    if (!started) return
+    if (elapsedSeconds <= 0) return
+    setWpmSamples((prev) => {
+      if (prev.length >= elapsedSeconds) return prev;
+      return [...prev, wpm];
+    });
+  }, [started, elapsedSeconds, wpm])
+
+  useEffect(() => {
+  if (!finished) return;
+  setWpmSamples((prev) => {
+    if (prev.length === 0 || prev[prev.length - 1] === wpm) return prev;
+    return [...prev, wpm];
+  });
+}, [finished, wpm]);
+
 
   const wordsCompleted = useMemo(() => {
     return state.statuses.reduce((total, row) => {
@@ -374,6 +402,7 @@ export default function useTypingGame(
           incorrectLetters,
           extraLetters,
           totalTyped,
+          wpmSamples,
           historicalMistakes: correctHistoricalMistakes,
           language: i18n.language
         }
@@ -395,6 +424,7 @@ export default function useTypingGame(
     extraLetters,
     totalTyped,
     historicalMistakes,
+    wpmSamples,
     i18n.language,
   ]);
 

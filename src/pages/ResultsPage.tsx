@@ -1,8 +1,9 @@
+import { ChartAreaLegend } from "@/components/ChartArea";
 import RestartButton from "@/components/restartButton/RestartButton";
 import Tooltip from "@/components/tooltip/Tooltip";
 import { useLocation, useNavigate } from "react-router-dom";
 
-// TODO: добавить посекугндный график
+// TODO: добавить посекугндный график errors
 export default function ResultsPage() {
   const navigate = useNavigate();
   const { state } = useLocation() as {
@@ -23,6 +24,7 @@ export default function ResultsPage() {
         extraLetters: number;
         historicalMistakes: number;
         language: string;
+        wpmSamples: [];
       };
     };
   };
@@ -58,6 +60,11 @@ export default function ResultsPage() {
     ro: "romanian",
   };
 
+  const wpmChartData = summary.wpmSamples.map((value, index) => ({
+    second: index + 1,
+    wpm: Math.floor(value),
+  }));
+
   return (
     <div className="px-45 bg-background h-screen flex justify-center items-center">
       <div className="w-full flex justify-center flex-col">
@@ -86,10 +93,11 @@ export default function ResultsPage() {
               </p>
             </Tooltip>
           </div>
-          <div>sdfsd</div>
+          <div>
+            <ChartAreaLegend data={wpmChartData} />
+          </div>
           <div>
             <p className="pb-1">test type</p>
-            {/* <p>{Math.round(summary.wordsCompleted)}</p> */}
             <div className="text-main">
               <p>
                 {summary.mode}{" "}
