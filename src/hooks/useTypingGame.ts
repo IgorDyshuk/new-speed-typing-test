@@ -4,10 +4,11 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 // TODO: сделать оптимизацию хука
+//TODO: починить китайский и японский язык
+//TODO: добавить consistency теста
+
 export type LetterStatus = "pending" | "correct" | "incorrect";
 export type TestMode = "time" | "words";
-
-//TODO: починить китайский и японский язык
 
 export type TypingState = {
   words: string[];

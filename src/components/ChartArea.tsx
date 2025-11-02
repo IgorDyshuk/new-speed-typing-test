@@ -83,7 +83,7 @@ export function ChartAreaLegend({
               dataKey="wpm"
               type="natural"
               fill="var(--color-sub)"
-              fillOpacity={0.4}
+              fillOpacity={0.25}
               stroke="var(--color-sub)"
               stackId="a"
             />
