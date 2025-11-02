@@ -1,6 +1,7 @@
 "use client";
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import type { DotProps } from "recharts";
 
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -15,10 +16,48 @@ export const description = "An area chart with a legend";
 
 const chartConfig = {
   wpm: { label: "WPM", color: "var(--color-sub)" },
-  errors: { label: "Errors", color: "var(--color-main)" },
+  errors: { label: "Errors", color: "var(--color-error)" },
 } satisfies ChartConfig;
 
 //TODO: поставить лейбл впм по середине
+
+const renderErrorDot = ({
+  cx,
+  cy,
+  payload,
+}: DotProps & {
+  payload?: { errors?: number };
+}): React.ReactElement<SVGElement> => {
+  const errors = payload?.errors ?? 0;
+
+  if (cx == null || cy == null || errors === 0) {
+    return (<g />) as React.ReactElement<SVGElement>;
+  }
+
+  const size = 3;
+  return (
+    <g>
+      <line
+        x1={cx - size}
+        y1={cy - size}
+        x2={cx + size}
+        y2={cy + size}
+        stroke="var(--color-error)"
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+      <line
+        x1={cx - size}
+        y1={cy + size}
+        x2={cx + size}
+        y2={cy - size}
+        stroke="var(--color-error)"
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </g>
+  ) as React.ReactElement<SVGElement>;
+};
 
 export function ChartAreaLegend({
   wpmData,
@@ -122,17 +161,20 @@ export function ChartAreaLegend({
               strokeWidth={3}
               dot={true}
               stackId="b"
+              animationBegin={20}
             />
             <Area
               dataKey="errors"
-              yAxisId={"errors"}
+              yAxisId="errors"
               type="monotone"
-              fill="var(--color-main)"
-              fillOpacity={0}
-              stroke="var(--color-main)"
-              strokeWidth={3}
-              dot={true}
-              stackId="a"
+              stroke="var(--color-error)"
+              strokeOpacity={0}
+              strokeWidth={4}
+              fill="none"
+              fillOpacity={1}
+              activeDot={false}
+              isAnimationActive={false}
+              dot={renderErrorDot}
             />
           </AreaChart>
         </ChartContainer>

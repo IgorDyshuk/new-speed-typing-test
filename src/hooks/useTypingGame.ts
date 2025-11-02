@@ -220,6 +220,14 @@ export default function useTypingGame(
   const [allErrorsTimestamps, setAllErrorsTimestamps] = useState<number[]>([])
   const [errorSamples, setErrorSamples] = useState<number[]>([])
 
+ const errorDeltaSamples = useMemo(() => {
+  return errorSamples.map((totalCount, index) => {
+    const prevTotal = index > 0 ? errorSamples[index - 1] : 0;
+    return [totalCount - prevTotal, index + 1] as [number, number];
+  });
+}, [errorSamples]);
+
+
   //TODO: убарть двоеное начисление в хуке, и убрать деление
   const correctHistoricalMistakes = Math.floor(historicalMistakes / 2)
 
@@ -432,7 +440,7 @@ export default function useTypingGame(
           extraLetters,
           totalTyped,
           wpmSamples,
-          errorSamples: errorSamples || [],
+          errorDeltaSamples,
           historicalMistakes: correctHistoricalMistakes,
           language: i18n.language
         }
@@ -455,7 +463,7 @@ export default function useTypingGame(
     totalTyped,
     historicalMistakes,
     wpmSamples,
-    errorSamples,
+    errorDeltaSamples,
     i18n.language,
   ]);
 

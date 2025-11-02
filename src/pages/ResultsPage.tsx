@@ -26,7 +26,7 @@ export default function ResultsPage() {
         historicalMistakes: number;
         language: string;
         wpmSamples: number[];
-        errorSamples: number[];
+        errorDeltaSamples: [number, number][];
       };
     };
   };
@@ -67,9 +67,11 @@ export default function ResultsPage() {
     wpm: Math.floor(value),
   }));
 
-  const errorChartData = summary.errorSamples.map((value, index) => ({
-    second: index + 1,
-    errors: value / 2,
+  const errorDeltaSamples = summary.errorDeltaSamples ?? [];
+
+  const mistakeDeltaChartData = errorDeltaSamples.map(([delta, second]) => ({
+    second,
+    errors: delta / 2,
   }));
 
   return (
@@ -103,7 +105,7 @@ export default function ResultsPage() {
           <div>
             <ChartAreaLegend
               wpmData={wpmChartData}
-              errorData={errorChartData}
+              errorData={mistakeDeltaChartData}
             />
           </div>
           <div>
