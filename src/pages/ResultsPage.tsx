@@ -3,7 +3,8 @@ import RestartButton from "@/components/restartButton/RestartButton";
 import Tooltip from "@/components/tooltip/Tooltip";
 import { useLocation, useNavigate } from "react-router-dom";
 
-// TODO: добавить посекугндный график errors
+//TODO: убрать "_" в тултипе acc
+
 export default function ResultsPage() {
   const navigate = useNavigate();
   const { state } = useLocation() as {
@@ -24,7 +25,8 @@ export default function ResultsPage() {
         extraLetters: number;
         historicalMistakes: number;
         language: string;
-        wpmSamples: [];
+        wpmSamples: number[];
+        errorSamples: number[];
       };
     };
   };
@@ -65,11 +67,16 @@ export default function ResultsPage() {
     wpm: Math.floor(value),
   }));
 
+  const errorChartData = summary.errorSamples.map((value, index) => ({
+    second: index + 1,
+    errors: value / 2,
+  }));
+
   return (
     <div className="px-45 bg-background h-screen flex justify-center items-center">
       <div className="w-full flex justify-center flex-col">
         <div className="w-full grid gap-7 grid-cols-[auto_1fr] text-sub pb-0.25 text-[1rem] leading-[1rem]">
-          <div>
+          <div className="flex flex-col gap-2">
             <Tooltip
               label={`${summary.wpm.toFixed(2)} wpm`}
               wrap={false}
@@ -94,7 +101,10 @@ export default function ResultsPage() {
             </Tooltip>
           </div>
           <div>
-            <ChartAreaLegend data={wpmChartData} />
+            <ChartAreaLegend
+              wpmData={wpmChartData}
+              errorData={errorChartData}
+            />
           </div>
           <div>
             <p className="pb-1">test type</p>

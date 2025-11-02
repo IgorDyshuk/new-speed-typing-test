@@ -9,37 +9,64 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
+import { useMemo } from "react";
 
 export const description = "An area chart with a legend";
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "color-main",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--chart-2)",
-  },
+  wpm: { label: "WPM", color: "var(--color-sub)" },
+  errors: { label: "Errors", color: "var(--color-main)" },
 } satisfies ChartConfig;
 
 //TODO: поставить лейбл впм по середине
 
 export function ChartAreaLegend({
-  data,
+  wpmData,
+  errorData,
 }: {
-  data: { second: number; wpm: number }[];
+  wpmData: { second: number; wpm: number }[];
+  errorData: { second: number; errors: number }[];
 }) {
+  const chartData = useMemo(() => {
+    const merged = new Map<
+      number,
+      { second: number; wpm: number; errors: number }
+    >();
+
+    for (const sample of wpmData) {
+      merged.set(sample.second, {
+        second: sample.second,
+        wpm: sample.wpm,
+        errors: 0,
+      });
+    }
+
+    for (const sample of errorData) {
+      const existing = merged.get(sample.second);
+      if (existing) {
+        existing.errors = sample.errors;
+      } else {
+        merged.set(sample.second, {
+          second: sample.second,
+          wpm: 0,
+          errors: sample.errors,
+        });
+      }
+    }
+
+    return Array.from(merged.values()).sort((a, b) => a.second - b.second);
+  }, [wpmData, errorData]);
   return (
     <Card>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-52 w-full">
           <AreaChart
             accessibilityLayer
-            data={data}
+            data={chartData}
             margin={{
               left: 12,
               right: 12,
+              top: 8,
             }}
           >
             <CartesianGrid vertical={false} />
@@ -51,6 +78,7 @@ export function ChartAreaLegend({
             />
             <YAxis
               dataKey="wpm"
+              yAxisId={"wpm"}
               tickLine={false}
               axisLine={false}
               tickMargin={8}
@@ -58,6 +86,19 @@ export function ChartAreaLegend({
                 value: "Words per minute",
                 angle: -90,
                 position: "left",
+              }}
+            />
+            <YAxis
+              dataKey="errors"
+              yAxisId={"errors"}
+              orientation="right"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              label={{
+                value: "Errors",
+                angle: -90,
+                position: "right",
               }}
             />
             <ChartTooltip
@@ -71,20 +112,26 @@ export function ChartAreaLegend({
                 />
               }
             />
-            {/* <Area
-              dataKey="wpm"
-              type="natural"
-              fill="var(--color-main)"
-              fillOpacity={0.4}
-              stroke="var(--color-main)"
-              stackId="a"
-            /> */}
             <Area
               dataKey="wpm"
-              type="natural"
+              yAxisId={"wpm"}
+              type="monotone"
               fill="var(--color-sub)"
               fillOpacity={0.25}
               stroke="var(--color-sub)"
+              strokeWidth={3}
+              dot={true}
+              stackId="b"
+            />
+            <Area
+              dataKey="errors"
+              yAxisId={"errors"}
+              type="monotone"
+              fill="var(--color-main)"
+              fillOpacity={0}
+              stroke="var(--color-main)"
+              strokeWidth={3}
+              dot={true}
               stackId="a"
             />
           </AreaChart>

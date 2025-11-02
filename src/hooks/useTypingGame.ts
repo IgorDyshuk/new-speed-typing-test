@@ -217,6 +217,8 @@ export default function useTypingGame(
   const [elapsedMs, setElapsedMs] = useState(0);
   const [historicalMistakes, setHistoricalMistakes] = useState(0);
   const [wpmSamples, setWpmSamples] = useState<number[]>([])
+  const [allErrorsTimestamps, setAllErrorsTimestamps] = useState<number[]>([])
+  const [errorSamples, setErrorSamples] = useState<number[]>([])
 
   //TODO: убарть двоеное начисление в хуке, и убрать деление
   const correctHistoricalMistakes = Math.floor(historicalMistakes / 2)
@@ -244,6 +246,8 @@ export default function useTypingGame(
     setElapsedMs(0);
     setHistoricalMistakes(0);
     setWpmSamples([]);
+    setAllErrorsTimestamps([]);
+    setErrorSamples([]);
   }, [generateWords, durationSeconds, includeNumbers, includePunctuation]);
 
   const restart = useCallback(() => {
@@ -261,6 +265,8 @@ export default function useTypingGame(
     setElapsedMs(0);
     setHistoricalMistakes(0);
     setWpmSamples([]);
+    setAllErrorsTimestamps([]);
+    setErrorSamples([]);
   }, [generateWords, durationSeconds]);
 
   useEffect(() => {
@@ -270,6 +276,8 @@ export default function useTypingGame(
     setElapsedMs(0);
     setHistoricalMistakes(0);
     setWpmSamples([]);
+    setAllErrorsTimestamps([]);
+    setErrorSamples([]);
   }, [durationSeconds, mode]);
 
   useEffect(() => {
@@ -357,7 +365,15 @@ export default function useTypingGame(
       if (prev.length >= elapsedSeconds) return prev;
       return [...prev, wpm];
     });
-  }, [started, elapsedSeconds, wpm])
+    // Update error samples every second
+    setErrorSamples((prev) => {
+      if (prev.length >= elapsedSeconds) return prev;
+      const errorsUpToSecond = allErrorsTimestamps.filter(
+        (timestamp) => timestamp <= elapsedSeconds
+      ).length;
+      return [...prev, errorsUpToSecond];
+    });
+  }, [started, elapsedSeconds, wpm, allErrorsTimestamps])
 
   useEffect(() => {
   if (!finished) return;
@@ -365,7 +381,19 @@ export default function useTypingGame(
     if (prev.length === 0 || prev[prev.length - 1] === wpm) return prev;
     return [...prev, wpm];
   });
-}, [finished, wpm]);
+  setErrorSamples((prev) => {
+    if (prev.length === 0) {
+      const totalErrors = allErrorsTimestamps.length;
+      return totalErrors > 0 ? [...prev, totalErrors] : prev;
+    }
+    const totalErrors = allErrorsTimestamps.length;
+    const lastErrorCount = prev[prev.length - 1];
+    if (totalErrors !== lastErrorCount) {
+      return [...prev, totalErrors];
+    }
+    return prev;
+  });
+}, [finished, wpm, allErrorsTimestamps]);
 
 
   const wordsCompleted = useMemo(() => {
@@ -404,6 +432,7 @@ export default function useTypingGame(
           extraLetters,
           totalTyped,
           wpmSamples,
+          errorSamples: errorSamples || [],
           historicalMistakes: correctHistoricalMistakes,
           language: i18n.language
         }
@@ -426,6 +455,7 @@ export default function useTypingGame(
     totalTyped,
     historicalMistakes,
     wpmSamples,
+    errorSamples,
     i18n.language,
   ]);
 
@@ -613,13 +643,18 @@ export default function useTypingGame(
         }
 
         if (isLetter) {
+          const wasStarted = started;
           if (!started) setStarted(true);
           const expected = currentWord[currentCharIndex] ?? "";
           if (currentCharIndex < currentWord.length) {
             const isCorrect = key === expected;
             wordStatuses[currentCharIndex] = isCorrect ? "correct" : "incorrect";
-            if (!isCorrect) {
+            if (!isCorrect && wasStarted) {
               setHistoricalMistakes((prev) => prev + 1);
+              setAllErrorsTimestamps((prev) => {
+                const currentSecond = Math.floor(elapsedMs / 1000);
+                return [...prev, currentSecond];
+              });
             }
             return finalize({
               words,
@@ -630,7 +665,13 @@ export default function useTypingGame(
             });
           }
           wordExtras.push(key);
-          setHistoricalMistakes((prev) => prev + 1);
+          if (wasStarted) {
+            setHistoricalMistakes((prev) => prev + 1);
+            setAllErrorsTimestamps((prev) => {
+              const currentSecond = Math.floor(elapsedMs / 1000);
+              return [...prev, currentSecond];
+            });
+          }
           return finalize({
             words,
             currentWordIndex,
@@ -651,7 +692,7 @@ export default function useTypingGame(
         setFinished(true);
       }
     },
-    [state.words.length, finished, started, mode, isWordsGameComplete],
+    [state.words.length, finished, started, mode, isWordsGameComplete, elapsedMs],
   );
 
   const handleBeforeInput = useCallback(
