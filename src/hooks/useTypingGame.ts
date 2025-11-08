@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 // TODO: сделать оптимизацию хука
 //TODO: починить китайский и японский язык
-//TODO: добавить consistency теста
 
 export type LetterStatus = "pending" | "correct" | "incorrect";
 export type TestMode = "time" | "words";
@@ -361,8 +360,10 @@ export default function useTypingGame(
     const minutes = elapsedSec > 0 ? elapsedSec / 60 : 0;
     const wpmValue = minutes > 0 ? (correct / 5) / minutes : 0;
     const correctWithHistorical = correct - correctHistoricalMistakes;
+    const normalizedCorrectHistoricalMistakes = Math.max(0, Math.min(typed, correctWithHistorical))
+
     const accValue =
-      typed > 0 ? (correctWithHistorical / typed) * 100 : 100;
+      typed > 0 ? (normalizedCorrectHistoricalMistakes / typed) * 100 : 100;
 
     return {
       wpm: wpmValue,
