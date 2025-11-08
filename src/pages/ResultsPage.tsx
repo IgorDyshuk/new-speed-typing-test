@@ -3,8 +3,6 @@ import RestartButton from "@/components/restartButton/RestartButton";
 import Tooltip from "@/components/tooltip/Tooltip";
 import { useLocation, useNavigate } from "react-router-dom";
 
-//TODO: убрать "_" в тултипе acc
-
 export default function ResultsPage() {
   const navigate = useNavigate();
   const { state } = useLocation() as {
@@ -74,10 +72,16 @@ export default function ResultsPage() {
     errors: delta / 2,
   }));
 
+  const accTooltip = [
+    `${summary.acc.toFixed(2)}%`,
+    `${summary.correctLetters}\u00A0correct`,
+    `${summary.historicalMistakes}\u00A0incorrect`,
+  ].join("\n");
+
   return (
     <div className="px-45 bg-background h-screen flex justify-center items-center">
       <div className="w-full flex justify-center flex-col">
-        <div className="w-full grid gap-7 grid-cols-[auto_1fr] text-sub pb-0.25 text-[1rem] leading-[1rem]">
+        <div className="w-full grid gap-7 grid-cols-[auto_1fr] text-sub pb-0.25 text-[1rem] leading-4">
           <div className="flex flex-col gap-2">
             <Tooltip
               label={`${summary.wpm.toFixed(2)} wpm`}
@@ -85,19 +89,19 @@ export default function ResultsPage() {
               beforeTop={-10}
               afterTop={15}
             >
-              <h3 className="text-[2rem] leading-[1.5rem]"> wpm </h3>
-              <p className="text-main text-[4rem] leading-[4rem] pb-[0.5rem]">
+              <h3 className="text-[2rem] leading-6"> wpm </h3>
+              <p className="text-main text-[4rem] leading-16 pb-2">
                 {Math.floor(summary.wpm)}
               </p>
             </Tooltip>
             <Tooltip
-              label={`${summary.acc.toFixed(2)}% ${summary.correctLetters}_correct ${summary.historicalMistakes}_incorrect`}
+              label={accTooltip}
               wrap={true}
               beforeTop={-49}
               afterTop={15}
             >
-              <h3 className="text-[2rem] leading-[1.5rem]"> acc </h3>
-              <p className="text-main text-[4rem] leading-[4rem]">
+              <h3 className="text-[2rem] leading-6"> acc </h3>
+              <p className="text-main text-[4rem] leading-16">
                 {Math.floor(summary.acc)}%
               </p>
             </Tooltip>

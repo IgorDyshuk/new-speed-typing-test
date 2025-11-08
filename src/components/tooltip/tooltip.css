@@ -26,7 +26,7 @@
     pointer-events: none;
 }
 
-.tooltip--wrap:before {
+.tooltip--wrap::before {
     white-space: wrap;
 }
 
