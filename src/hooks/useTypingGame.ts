@@ -220,6 +220,16 @@ export default function useTypingGame(
   const [allErrorsTimestamps, setAllErrorsTimestamps] = useState<number[]>([])
   const [errorSamples, setErrorSamples] = useState<number[]>([])
 
+  const calculateConsistency = (samples: number[], minBaseLine = 1) => {
+    if (samples.length <= 1 ) return 100
+    const avg = samples.reduce((sum, value) => sum + value, 0)/samples.length
+    const baseLine = Math.max(Math.abs(avg), minBaseLine)
+    const variance = samples.reduce((sum, value) => sum + (value - avg) ** 2, 0) / samples.length
+    const std = Math.sqrt(variance)
+    const normalized = 100 - Math.min(100, (std / baseLine) * 100)
+    return Number.isFinite(normalized) ? Math.max(0, normalized) : 0
+  }
+
  const errorDeltaSamples = useMemo(() => {
   return errorSamples.map((totalCount, index) => {
     const prevTotal = index > 0 ? errorSamples[index - 1] : 0;
@@ -227,8 +237,11 @@ export default function useTypingGame(
   });
 }, [errorSamples]);
 
+  const wpmConsistency = useMemo(
+    () => calculateConsistency(wpmSamples),
+    [wpmSamples]
+  )
 
-  //TODO: убарть двоеное начисление в хуке, и убрать деление
   const correctHistoricalMistakes = Math.floor(historicalMistakes / 2)
 
   const isWordsGameComplete = useCallback(
@@ -441,6 +454,7 @@ export default function useTypingGame(
           totalTyped,
           wpmSamples,
           errorDeltaSamples,
+          wpmConsistency,
           historicalMistakes: correctHistoricalMistakes,
           language: i18n.language
         }
@@ -464,6 +478,7 @@ export default function useTypingGame(
     historicalMistakes,
     wpmSamples,
     errorDeltaSamples,
+    wpmConsistency,
     i18n.language,
   ]);
 

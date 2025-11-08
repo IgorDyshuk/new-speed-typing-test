@@ -25,6 +25,7 @@ export default function ResultsPage() {
         language: string;
         wpmSamples: number[];
         errorDeltaSamples: [number, number][];
+        wpmConsistency: number;
       };
     };
   };
@@ -127,6 +128,18 @@ export default function ResultsPage() {
             </div>
           </div>
           <div className="flex justify-between items-start">
+            <div></div>
+            <Tooltip
+              label={`${summary.wpmConsistency.toFixed(2)} %`}
+              wrap={false}
+              beforeTop={-10}
+              afterTop={15}
+            >
+              <p className="pb-2">consistency</p>
+              <p className="text-main text-[2rem]">
+                {Math.floor(summary.wpmConsistency)}%
+              </p>
+            </Tooltip>
             <div></div>
             <Tooltip
               label="all-typed correct incorrect extra"
