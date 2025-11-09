@@ -1,8 +1,6 @@
 "use client";
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import type { DotProps } from "recharts";
-
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -11,6 +9,8 @@ import {
 } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
 import { useMemo } from "react";
+import RenderErrorDot from "./RenderErrorDots";
+import AnimatedWpmDot from "./AnimatedWpmDot";
 
 export const description = "An area chart with a legend";
 
@@ -20,44 +20,6 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 //TODO: поставить лейбл впм по середине
-
-const renderErrorDot = ({
-  cx,
-  cy,
-  payload,
-}: DotProps & {
-  payload?: { errors?: number };
-}): React.ReactElement<SVGElement> => {
-  const errors = payload?.errors ?? 0;
-
-  if (cx == null || cy == null || errors === 0) {
-    return (<g />) as React.ReactElement<SVGElement>;
-  }
-
-  const size = 3;
-  return (
-    <g>
-      <line
-        x1={cx - size}
-        y1={cy - size}
-        x2={cx + size}
-        y2={cy + size}
-        stroke="var(--color-error)"
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-      <line
-        x1={cx - size}
-        y1={cy + size}
-        x2={cx + size}
-        y2={cy - size}
-        stroke="var(--color-error)"
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-    </g>
-  ) as React.ReactElement<SVGElement>;
-};
 
 export function ChartAreaLegend({
   wpmData,
@@ -93,8 +55,11 @@ export function ChartAreaLegend({
       }
     }
 
-    return Array.from(merged.values()).sort((a, b) => a.second - b.second);
+    return Array.from(merged.values())
+      .sort((a, b) => a.second - b.second)
+      .map((entry, index) => ({ ...entry, order: index }));
   }, [wpmData, errorData]);
+
   return (
     <Card>
       <CardContent>
@@ -159,7 +124,7 @@ export function ChartAreaLegend({
               fillOpacity={0.25}
               stroke="var(--color-sub)"
               strokeWidth={3}
-              dot={true}
+              dot={<AnimatedWpmDot />}
               stackId="b"
               animationBegin={20}
             />
@@ -173,8 +138,8 @@ export function ChartAreaLegend({
               fill="none"
               fillOpacity={1}
               activeDot={false}
-              isAnimationActive={false}
-              dot={renderErrorDot}
+              animationBegin={20}
+              dot={<RenderErrorDot />}
             />
           </AreaChart>
         </ChartContainer>

@@ -1,4 +1,4 @@
-import { ChartAreaLegend } from "@/components/ChartArea";
+import { ChartAreaLegend } from "@/components/Chart/ChartArea";
 import RestartButton from "@/components/restartButton/RestartButton";
 import Tooltip from "@/components/tooltip/Tooltip";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -90,7 +90,7 @@ export default function ResultsPage() {
               beforeTop={-10}
               afterTop={15}
             >
-              <h3 className="text-[2rem] leading-6"> wpm </h3>
+              <h3 className="text-[2rem] leading-6 pb-0.5"> wpm </h3>
               <p className="text-main text-[4rem] leading-16 pb-2">
                 {Math.floor(summary.wpm)}
               </p>
