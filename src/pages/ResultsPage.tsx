@@ -149,9 +149,9 @@ export default function ResultsPage() {
             >
               <p className="pb-2">characters</p>
               <p className="text-main text-[2rem]">
-                {Math.round(summary.totalTyped)} /{" "}
-                {Math.round(summary.correctLetters)} /{" "}
-                {Math.round(summary.incorrectLetters)} /{" "}
+                {Math.round(summary.totalTyped)}/{""}
+                {Math.round(summary.correctLetters)}/{""}
+                {Math.round(summary.incorrectLetters)}/{""}
                 {Math.round(summary.extraLetters)}
               </p>
             </Tooltip>
