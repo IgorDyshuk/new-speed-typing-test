@@ -4,47 +4,45 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./components/themeProvider";
 import ResultsPage from "@/pages/ResultsPage.tsx";
 import { AnimatePresence, easeInOut, motion } from "framer-motion";
+import { Toaster } from "sonner";
 
 function AnimatedRoutes() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <Routes location={location} key={location.pathname}>
-        <Route
-          path="/"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              // initial={{ opacity: 0, y: -20 }}
-              // animate={{ opacity: 1, y: 0 }}
-              // exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.175, ease: easeInOut }}
-            >
-              <GamePage />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/results"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              // initial={{ opacity: 0, y: -20 }}
-              // animate={{ opacity: 1, y: 0 }}
-              // exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.175, ease: easeInOut }}
-            >
-              <ResultsPage />
-            </motion.div>
-          }
-        />
-      </Routes>
-    </AnimatePresence>
+    <>
+      <AnimatePresence mode="wait" initial={false}>
+        <Routes location={location} key={location.pathname}>
+          <Route
+            path="/"
+            element={
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.175, ease: easeInOut }}
+              >
+                <GamePage />
+              </motion.div>
+            }
+          />
+          <Route
+            path="/results"
+            element={
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.175, ease: easeInOut }}
+              >
+                <ResultsPage />
+              </motion.div>
+            }
+          />
+        </Routes>
+      </AnimatePresence>
+      <Toaster richColors />
+    </>
   );
 }
 

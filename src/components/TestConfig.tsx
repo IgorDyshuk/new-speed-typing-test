@@ -1,9 +1,9 @@
 import { AtSign, Hash, Clock, CaseUpper, Wrench } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 type TestMode = "time" | "words";
 
-// TODO: добавить ограницчение на кастомные инпуты (минимальное значение должно быть 2, при неккоректном вводе показывать замечание через уведомление)
 export default function TestConfig({
   duration,
   onChangeDuration,
@@ -121,15 +121,19 @@ export default function TestConfig({
 
   const commitCustom = () => {
     const s = parseInt(customStr.trim(), 10);
-    if (!Number.isNaN(s) && s > 0) {
-      if (isTimePanel) {
-        onChangeDuration(s);
-      } else {
-        onWordCount(s);
-      }
-      setCustomOpen(false);
+
+    if (Number.isNaN(s) || s < 2) {
+      toast.error("Minimum value is 2");
       setCustomStr("");
+      return;
     }
+    if (isTimePanel) {
+      onChangeDuration(s);
+    } else {
+      onWordCount(s);
+    }
+    setCustomOpen(false);
+    setCustomStr("");
   };
 
   return (
