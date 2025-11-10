@@ -113,7 +113,7 @@ export function ThemeChoice({
           setOpen(true);
         }}
         onClick={() => setOpen(true)}
-        className="flex items-center justify-center gap-2 text-lg font-[500] hover:cursor-pointer"
+        className="flex items-center justify-center gap-2 text-lg font-medium hover:cursor-pointer"
       >
         <Paintbrush className="w-5" />
         {labelize(selected)}

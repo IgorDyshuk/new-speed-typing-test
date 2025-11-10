@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 
 // TODO: сделать оптимизацию хука
 //TODO: починить китайский и японский язык
+//TODO: начать вести статитстику через стор zustand
+//TODO: если побил рекорд по впм сделать эффект конфити и через уведомления поздравить пользователся (только для заранее поставленных значениях теста)
 
 export type LetterStatus = "pending" | "correct" | "incorrect";
 export type TestMode = "time" | "words";

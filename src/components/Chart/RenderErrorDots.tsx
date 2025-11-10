@@ -22,7 +22,7 @@ const RenderErrorDot = ({
       style={{
         opacity: 0,
         animation: "error-dot-fade 260ms ease forwards",
-        animationDelay: `${order * 40}ms`, // если хочешь задержку по секунде
+        animationDelay: `${order * 40}ms`,
       }}
     >
       <line

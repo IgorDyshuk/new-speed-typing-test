@@ -11,10 +11,9 @@ import {
   defaultSettings,
   useGameSettingsStore,
 } from "@/store/useGameSettingsStore";
+import { useGameSessionStore } from "@/store/useGameSessionStore";
 
 // TODO: добавить уведомления и показывать смешные уведы раз на много игр
-// TODO: поменять шрифт всей страницы
-//TODO: добавить хедер страницы
 export default function GamePage() {
   const SESSION_FLAG = "typing-test-first-visit";
 
@@ -60,6 +59,16 @@ export default function GamePage() {
     wordsCompleted,
     totalWords,
   } = useTypingGame(wordCount, duration, mode, withNumbers, withPunctuation);
+
+  const { setStarted, setFinished } = useGameSessionStore();
+
+  useEffect(() => {
+    setStarted(started);
+  }, [started, setStarted]);
+
+  useEffect(() => {
+    setFinished(finished);
+  }, [finished, setFinished]);
 
   const [renderWords, setRenderWords] = useState<string[]>([]);
   const [renderStatuses, setRenderStatuses] = useState<LetterStatus[][]>([]);
@@ -197,8 +206,7 @@ export default function GamePage() {
   }, [restart]);
 
   return (
-    <div className="px-45 bg-background h-screen">
-      {/* <header></header> */}
+    <div className="bg-background">
       <main className="flex items-center flex-col">
         <div
           className={`transition-opacity duration-300 ${
@@ -251,7 +259,7 @@ export default function GamePage() {
         </div>
         <div
           id="typingTest"
-          className={`relative pt-75 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
+          className={`relative pt-52 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
             wordsPhase === "fade-out" || wordsPhase === "initial"
               ? "opacity-0"
               : "opacity-100"
@@ -323,7 +331,6 @@ export default function GamePage() {
                 handleBeforeInput(e);
               }}
               onChange={(e) => {
-                // keep empty
                 e.currentTarget.value = "";
               }}
               onFocus={() => {

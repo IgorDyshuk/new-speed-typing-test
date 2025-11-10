@@ -1,61 +1,24 @@
-import { Route, Routes, HashRouter, useLocation } from "react-router-dom";
-import GamePage from "@/pages/GamePage.tsx";
+import { HashRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./components/themeProvider";
-import ResultsPage from "@/pages/ResultsPage.tsx";
-import { AnimatePresence, easeInOut, motion } from "framer-motion";
 import { Toaster } from "sonner";
+import AnimatedRoutes from "./components/AnimatedRoutes";
+import Header from "./components/Header";
 
-function AnimatedRoutes() {
-  const location = useLocation();
-
-  return (
-    <>
-      <AnimatePresence mode="wait" initial={false}>
-        <Routes location={location} key={location.pathname}>
-          <Route
-            path="/"
-            element={
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.175, ease: easeInOut }}
-              >
-                <GamePage />
-              </motion.div>
-            }
-          />
-          <Route
-            path="/results"
-            element={
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.175, ease: easeInOut }}
-              >
-                <ResultsPage />
-              </motion.div>
-            }
-          />
-        </Routes>
-      </AnimatePresence>
-      <Toaster richColors />
-    </>
-  );
-}
+// TODO: сделать страницу со статистикой
 
 function App() {
   const queryClient = new QueryClient();
 
   return (
     <ThemeProvider defaultTheme="royal" storageKey="vite-ui-theme">
-      <div className="bg-background leading-[250%]">
+      <div className="px-45 bg-background leading-[250%]">
         <QueryClientProvider client={queryClient}>
           <HashRouter>
+            <Header />
             <AnimatedRoutes />
           </HashRouter>
+          <Toaster richColors />
         </QueryClientProvider>
       </div>
     </ThemeProvider>

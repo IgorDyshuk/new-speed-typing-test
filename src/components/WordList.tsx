@@ -89,7 +89,7 @@ export default function WordList({
   return (
     <div
       ref={containerRef}
-      className="relative overflow-hidden max-h-[10.5rem] words-blurred"
+      className="relative overflow-hidden max-h-42 words-blurred"
     >
       <div
         id="words"
@@ -110,7 +110,7 @@ export default function WordList({
             <span
               key={wi}
               ref={wi === 0 ? firstWordRef : undefined}
-              className={`word inline-block mx-[0.3em] my-[0.25em] text-[32px] font-[450] ${isCurrentWord ? "current" : ""} ${shouldOutline ? "shadow-[inset_0_-2px_0_0_var(--color-error)]" : ""}`}
+              className={`word inline-block mx-[0.3em] my-[0.22em] text-[2rem] font-light ${isCurrentWord ? "current" : ""} ${shouldOutline ? "shadow-[inset_0_-2px_0_0_var(--color-error)]" : ""}`}
             >
               {letters.map((ch, ci) => {
                 const st = letterStatuses[ci] ?? "pending";

@@ -80,7 +80,7 @@ export default function ResultsPage() {
   ].join("\n");
 
   return (
-    <div className="px-45 bg-background h-screen flex justify-center items-center">
+    <div className="bg-background mt-58 flex justify-center items-center">
       <div className="w-full flex justify-center flex-col">
         <div className="w-full grid gap-7 grid-cols-[auto_1fr] text-sub pb-0.25 text-[1rem] leading-4">
           <div className="flex flex-col gap-2">
