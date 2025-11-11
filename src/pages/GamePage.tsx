@@ -60,7 +60,7 @@ export default function GamePage() {
     totalWords,
   } = useTypingGame(wordCount, duration, mode, withNumbers, withPunctuation);
 
-  const { setStarted, setFinished } = useGameSessionStore();
+  const { setStarted, setFinished, setRestart } = useGameSessionStore();
 
   useEffect(() => {
     setStarted(started);
@@ -204,6 +204,10 @@ export default function GamePage() {
       inputRef.current?.focus();
     });
   }, [restart]);
+
+  useEffect(() => {
+    setRestart(() => handleRestart());
+  }, [handleRestart, setRestart]);
 
   return (
     <div className="bg-background">
