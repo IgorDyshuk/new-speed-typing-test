@@ -1,7 +1,6 @@
 import { useLayoutEffect, useState, type RefObject } from "react";
 
 type CaretPos = { left: number; top: number; height: number } | null;
-//TODO: попробовать поменять быстроту анимации
 
 export default function TypingCaret({
   containerRef,
