@@ -2,6 +2,7 @@ import { useGameSessionStore } from "@/store/useGameSessionStore";
 import { useEffect, useState } from "react";
 import Logo from "@/assets/logo.svg?react";
 import { useLocation, useNavigate } from "react-router-dom";
+import AccountButton from "./AccountButton";
 
 export default function Header() {
   const { started, finished, restart } = useGameSessionStore();
@@ -42,7 +43,7 @@ export default function Header() {
         </h1>
       </button>
       <div className={`text-sub transition-opacity duration-300 ${visible}`}>
-        account
+        <AccountButton />
       </div>
     </header>
   );
