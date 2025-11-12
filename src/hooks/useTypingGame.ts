@@ -1,5 +1,6 @@
 import i18n from "@/i18n";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useDaylyStatsStore } from "@/store/useDailyStatsStore";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -326,6 +327,19 @@ export default function useTypingGame(
     return () => window.clearInterval(id);
   }, [started, finished]);
 
+  const {addMs} = useDaylyStatsStore()
+  const prevElapsedRef = useRef(0)
+
+  useEffect(() => {
+    if (!started || finished) {
+      prevElapsedRef.current = elapsedMs
+      return
+    }
+    const delta = elapsedMs - prevElapsedRef.current
+    if (delta > 0) addMs(delta)
+    prevElapsedRef.current = elapsedMs
+  }, [started, finished, elapsedMs, addMs])
+
   // Derived results: words per minute (wpm) and accuracy (acc)
     const {
     wpm,
@@ -389,7 +403,7 @@ export default function useTypingGame(
       if (prev.length >= elapsedSeconds) return prev;
       return [...prev, wpm];
     });
-    // Update error samples every second
+
     setErrorSamples((prev) => {
       if (prev.length >= elapsedSeconds) return prev;
       const errorsUpToSecond = allErrorsTimestamps.filter(

@@ -1,6 +1,7 @@
 import { ChartAreaLegend } from "@/components/Chart/ChartArea";
 import RestartButton from "@/components/restartButton/RestartButton";
 import Tooltip from "@/components/tooltip/Tooltip";
+import { useDaylyStatsStore } from "@/store/useDailyStatsStore";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function ResultsPage() {
@@ -79,6 +80,16 @@ export default function ResultsPage() {
     `${summary.historicalMistakes}\u00A0incorrect`,
   ].join("\n");
 
+  const { totalMs } = useDaylyStatsStore();
+  const formatDuration = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+    return [hours, minutes, seconds]
+      .map((value) => value.toString().padStart(2, "0"))
+      .join(":");
+  };
+
   return (
     <div className="bg-background mt-58 flex justify-center items-center">
       <div className="w-full flex justify-center flex-col">
@@ -114,7 +125,7 @@ export default function ResultsPage() {
             />
           </div>
           <div>
-            <p className="pb-1">test type</p>
+            <p className="pb-2">test type</p>
             <div className="text-main">
               <p>
                 {summary.mode}{" "}
@@ -135,7 +146,7 @@ export default function ResultsPage() {
               beforeTop={-10}
               afterTop={15}
             >
-              <p className="pb-2">consistency</p>
+              <p className="pb-3">consistency</p>
               <p className="text-main text-[2rem]">
                 {Math.floor(summary.wpmConsistency)}%
               </p>
@@ -147,7 +158,7 @@ export default function ResultsPage() {
               beforeTop={-80}
               afterTop={1}
             >
-              <p className="pb-2">characters</p>
+              <p className="pb-3">characters</p>
               <p className="text-main text-[2rem]">
                 {Math.round(summary.totalTyped)}/{""}
                 {Math.round(summary.correctLetters)}/{""}
@@ -156,9 +167,12 @@ export default function ResultsPage() {
               </p>
             </Tooltip>
             <div>
-              <p className="pb-2">time</p>
+              <p className="pb-3">time</p>
               <p className="text-main text-[2rem]">
                 {Math.round(summary.totalSeconds)}s
+              </p>
+              <p className="pt-1.5 text-[12px]">
+                {formatDuration(totalMs / 1000)} today
               </p>
             </div>
           </div>
