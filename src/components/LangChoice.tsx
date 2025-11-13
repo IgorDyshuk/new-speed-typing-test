@@ -71,7 +71,7 @@ export function LangChoice({
       <button
         onClick={() => setOpen(true)}
         className={
-          "flex items-center justify-center gap-3 text-lg font-[500]" +
+          "flex items-center justify-center gap-3 text-lg font-medium" +
           " hover:cursor-pointer"
         }
       >
