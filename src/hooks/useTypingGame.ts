@@ -1,5 +1,4 @@
 import i18n from "@/i18n";
-import { useAccountStore } from "@/store/useAccountStore";
 import { useDailyStatsStore } from "@/store/useDailyStatsStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";

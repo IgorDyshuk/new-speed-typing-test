@@ -5,8 +5,6 @@ import { Toaster } from "sonner";
 import AnimatedRoutes from "./components/AnimatedRoutes";
 import Header from "./components/Header";
 
-// TODO: сделать страницу со статистикой
-
 function App() {
   const queryClient = new QueryClient();
 

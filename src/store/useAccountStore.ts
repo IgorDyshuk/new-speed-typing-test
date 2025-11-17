@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-//TODO: записывать время когда ты впервые зарегался на сайте
-
 type AccountState = {
   username: string;
   setUsername: (name: string) => void;

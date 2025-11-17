@@ -12,52 +12,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "./ui/button";
 import { useAccountStore } from "@/store/useAccountStore";
-import { RiAccountCircleLine } from "react-icons/ri";
-import { RiAccountCircleFill } from "react-icons/ri";
 import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { PenLine } from "lucide-react";
 import { toast } from "sonner";
 
-export default function AccountButton() {
+export default function EditAccountButton() {
   const { username, setUsername } = useAccountStore();
-  const formattedUsername = username.trim();
-  const isLoggedIn = Boolean(formattedUsername);
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const navigate = useNavigate();
-
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (isLoggedIn && next) return;
-        setOpen(next);
-      }}
-    >
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button
-          type="button"
-          className="flex items-center gap-2 hover:cursor-pointer"
-          onClick={(event) => {
-            if (!isLoggedIn) return;
-            event.preventDefault();
-            navigate("/statistic");
-          }}
-        >
-          {isLoggedIn ? (
-            <RiAccountCircleFill className="h-7 w-7" />
-          ) : (
-            <RiAccountCircleLine className="h-7 w-7" />
-          )}
-          <span>{formattedUsername}</span>
+        <button className="absolute right-0 h-full hover:bg-text hover:cursor-pointer hover:text-background px-1.5 rounded-r-xl">
+          <PenLine />
         </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Set username</DialogTitle>
+          <DialogTitle>Set new username</DialogTitle>
           <DialogDescription>
-            This name appears on your stats.{" "}
+            This will replace your current username everywhere.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
@@ -75,7 +50,7 @@ export default function AccountButton() {
                 const next = inputRef.current?.value.trim() ?? "";
                 setUsername(next);
                 setOpen(false);
-                toast.success("You successfully sign up");
+                toast.success("You successfully change your username");
               }}
             />
           </div>
@@ -91,7 +66,7 @@ export default function AccountButton() {
               const next = inputRef.current?.value?.trim() ?? "";
               setUsername(next);
               setOpen(false);
-              toast.success("You successfully sign up");
+              toast.success("You successfully change your username");
             }}
           >
             Save
