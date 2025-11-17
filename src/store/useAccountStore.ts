@@ -6,6 +6,7 @@ import { persist } from "zustand/middleware";
 type AccountState = {
   username: string;
   setUsername: (name: string) => void;
+  createdAt: string | null;
 
   testStarted: number;
   incrementTestStarted: () => void;
@@ -20,7 +21,18 @@ export const useAccountStore = create<AccountState>()(
   persist(
     (set) => ({
       username: "",
-      setUsername: (name) => set({ username: name }),
+      createdAt: null,
+      setUsername: (name) =>
+        set((state) => {
+          const trimmed = name.trim();
+
+          return {
+            username: trimmed,
+            createdAt: trimmed
+              ? (state.createdAt ?? new Date().toISOString())
+              : null,
+          };
+        }),
 
       testStarted: 0,
       incrementTestStarted: () =>

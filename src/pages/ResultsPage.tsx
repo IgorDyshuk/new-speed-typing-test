@@ -1,6 +1,7 @@
 import { ChartAreaLegend } from "@/components/Chart/ChartArea";
 import RestartButton from "@/components/restartButton/RestartButton";
 import Tooltip from "@/components/tooltip/Tooltip";
+import formateTime from "@/lib/formatTime";
 import { useDailyStatsStore } from "@/store/useDailyStatsStore";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -81,14 +82,6 @@ export default function ResultsPage() {
   ].join("\n");
 
   const { totalMs } = useDailyStatsStore();
-  const formatDuration = (totalSeconds: number) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = Math.floor(totalSeconds % 60);
-    return [hours, minutes, seconds]
-      .map((value) => value.toString().padStart(2, "0"))
-      .join(":");
-  };
 
   return (
     <div className="bg-background mt-35 flex justify-center items-center">
@@ -172,7 +165,7 @@ export default function ResultsPage() {
                 {Math.round(summary.totalSeconds)}s
               </p>
               <p className="pt-1.5 text-[12px]">
-                {formatDuration(totalMs / 1000)} today
+                {formateTime(totalMs / 1000)} today
               </p>
             </div>
           </div>
