@@ -15,24 +15,41 @@ import { useAccountStore } from "@/store/useAccountStore";
 import { RiAccountCircleLine } from "react-icons/ri";
 import { RiAccountCircleFill } from "react-icons/ri";
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function AccountButton() {
   const { username, setUsername } = useAccountStore();
-  const trimedUsername = username.trim();
-  const isLoggedIn = Boolean(trimedUsername);
+  const formattedUsername = username.trim();
+  const isLoggedIn = Boolean(formattedUsername);
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const navigate = useNavigate();
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (isLoggedIn && next) return;
+        setOpen(next);
+      }}
+    >
       <DialogTrigger asChild>
-        <button type="button" className="flex items-center gap-2">
+        <button
+          type="button"
+          className="flex items-center gap-2 hover:cursor-pointer"
+          onClick={(event) => {
+            if (!isLoggedIn) return;
+            event.preventDefault();
+            navigate("/statistic");
+          }}
+        >
           {isLoggedIn ? (
             <RiAccountCircleFill className="h-7 w-7" />
           ) : (
             <RiAccountCircleLine className="h-7 w-7" />
           )}
-          <span>{trimedUsername}</span>
+          <span>{formattedUsername}</span>
         </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -60,7 +77,7 @@ export default function AccountButton() {
           </DialogClose>
           <Button
             type="button"
-            variant="subbmit"
+            variant="submit"
             onClick={() => {
               const next = inputRef.current?.value?.trim() ?? "";
               setUsername(next);

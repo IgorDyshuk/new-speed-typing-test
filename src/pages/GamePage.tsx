@@ -12,6 +12,7 @@ import {
   useGameSettingsStore,
 } from "@/store/useGameSettingsStore";
 import { useGameSessionStore } from "@/store/useGameSessionStore";
+import { useAccountStore } from "@/store/useAccountStore";
 
 // TODO: добавить уведомления и показывать смешные уведы раз на много игр
 export default function GamePage() {
@@ -58,9 +59,20 @@ export default function GamePage() {
     finished,
     wordsCompleted,
     totalWords,
+    elapsedMs,
   } = useTypingGame(wordCount, duration, mode, withNumbers, withPunctuation);
 
   const { setStarted, setFinished, setRestart } = useGameSessionStore();
+  const incrementTestStarted = useAccountStore(
+    (state) => state.incrementTestStarted,
+  );
+  const incrementTestCompleted = useAccountStore(
+    (state) => state.incrementTestCompleted,
+  );
+  const addTypingMs = useAccountStore((state) => state.addTypingMs);
+  const startedCountedRef = useRef(false);
+  const finishedCountedRef = useRef(false);
+  const prevElapsedRef = useRef(0);
 
   useEffect(() => {
     setStarted(started);
@@ -69,6 +81,38 @@ export default function GamePage() {
   useEffect(() => {
     setFinished(finished);
   }, [finished, setFinished]);
+
+  useEffect(() => {
+    if (started && !startedCountedRef.current) {
+      incrementTestStarted();
+      startedCountedRef.current = true;
+    }
+    if (!started) {
+      startedCountedRef.current = false;
+    }
+  }, [started, incrementTestStarted]);
+
+  useEffect(() => {
+    if (finished && !finishedCountedRef.current) {
+      incrementTestCompleted();
+      finishedCountedRef.current = true;
+    }
+    if (!finished) {
+      finishedCountedRef.current = false;
+    }
+  }, [finished, incrementTestCompleted]);
+
+  useEffect(() => {
+    if (!started || finished) {
+      prevElapsedRef.current = elapsedMs;
+      return;
+    }
+    const delta = elapsedMs - prevElapsedRef.current;
+    if (delta > 0) {
+      addTypingMs(delta);
+    }
+    prevElapsedRef.current = elapsedMs;
+  }, [started, finished, elapsedMs, addTypingMs]);
 
   const [renderWords, setRenderWords] = useState<string[]>([]);
   const [renderStatuses, setRenderStatuses] = useState<LetterStatus[][]>([]);
@@ -263,7 +307,7 @@ export default function GamePage() {
         </div>
         <div
           id="typingTest"
-          className={`relative pt-52 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
+          className={`relative pt-37 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
             wordsPhase === "fade-out" || wordsPhase === "initial"
               ? "opacity-0"
               : "opacity-100"
@@ -356,7 +400,7 @@ export default function GamePage() {
         </div>
       </main>
       <div
-        className={`mt-55 transition-opacity duration-300 ${!started ? "opacity-100" : "opacity-0"}`}
+        className={`mt-35 transition-opacity duration-300 ${!started ? "opacity-100" : "opacity-0"}`}
       >
         <ThemeChoice
           onCloseFucusTyping={() =>

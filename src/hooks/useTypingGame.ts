@@ -1,5 +1,6 @@
 import i18n from "@/i18n";
-import { useDaylyStatsStore } from "@/store/useDailyStatsStore";
+import { useAccountStore } from "@/store/useAccountStore";
+import { useDailyStatsStore } from "@/store/useDailyStatsStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -34,106 +35,102 @@ export default function useTypingGame(
   durationSeconds: number = 30,
   mode: TestMode = "time",
   includeNumbers = false,
-  includePunctuation = false
+  includePunctuation = false,
 ) {
   const { t } = useTranslation();
 
   const dictionary = useMemo(() => {
-    const text = t("text")
-    if (["zh", "ja"].includes(i18n.language))  {
-      return text.split("")
+    const text = t("text");
+    if (["zh", "ja"].includes(i18n.language)) {
+      return text.split("");
     }
-    return text.split(" ")
-  }, [t, i18n.language])
+    return text.split(" ");
+  }, [t, i18n.language]);
 
   const punctuationOptions = [
-    {token: ".", weight: 0.5},
-    {token: ",", weight: 0.85},
-    {token: "?", weight: 0.25},
-    {token: "!", weight: 0.25},
-    {token: "...", weight: 0.1},
-    {token: ":", weight: 0.15},
-    {token: "(", weight: 0.2},
-    {token: "'", weight: 0.2},
-    {token: "\"", weight: 0.2},
-  ]
-  
+    { token: ".", weight: 0.5 },
+    { token: ",", weight: 0.85 },
+    { token: "?", weight: 0.25 },
+    { token: "!", weight: 0.25 },
+    { token: "...", weight: 0.1 },
+    { token: ":", weight: 0.15 },
+    { token: "(", weight: 0.2 },
+    { token: "'", weight: 0.2 },
+    { token: '"', weight: 0.2 },
+  ];
+
   const pairedPunctuation = [
     { open: "(", close: ")" },
     { open: "[", close: "]" },
-    { open: "\"", close: "\"" },
+    { open: '"', close: '"' },
     { open: "'", close: "'" },
   ];
 
-  const pickedWeighted = <T extends {weight: number}>(options: T[]): T => {
-    const total = options.reduce((sum, opt) => sum + opt.weight, 0) 
-    let r = Math.random() * total
+  const pickedWeighted = <T extends { weight: number }>(options: T[]): T => {
+    const total = options.reduce((sum, opt) => sum + opt.weight, 0);
+    let r = Math.random() * total;
     for (const opt of options) {
-      r -= opt.weight
-      if (r <= 0) return opt
+      r -= opt.weight;
+      if (r <= 0) return opt;
     }
-    return options[options.length - 1]
-  }
-  
+    return options[options.length - 1];
+  };
+
   const punctuationPool = punctuationOptions
     .map((opt) => opt.token)
     .concat(pairedPunctuation.map((pair) => pair.close));
 
-  const isClosingChar = (char: string) => 
-    pairedPunctuation.some(
-      (pair) => pair.close === char && pair.open !== char,
-    )
-  
+  const isClosingChar = (char: string) =>
+    pairedPunctuation.some((pair) => pair.close === char && pair.open !== char);
+
   const findPairByOpen = (char: string) =>
     pairedPunctuation.find((pair) => pair.open === char);
 
-  const isPunctuation = (token: string) => punctuationPool.includes(token)
+  const isPunctuation = (token: string) => punctuationPool.includes(token);
 
-  const pickPunctuation = () =>
-    pickedWeighted(punctuationOptions).token
+  const pickPunctuation = () => pickedWeighted(punctuationOptions).token;
 
   const pickNumbers = () => {
-    const digits = Math.floor(Math.random() * 3) + 1
-    let value = ''
+    const digits = Math.floor(Math.random() * 3) + 1;
+    let value = "";
     for (let i = 0; i < digits; i++) {
-      value += Math.floor(Math.random() * 10).toString()
+      value += Math.floor(Math.random() * 10).toString();
     }
-    return value
-  }
+    return value;
+  };
 
   const generateWords = useCallback((): string[] => {
-    const merged: string[] = []
-    let wordsSinceStrong = 0
+    const merged: string[] = [];
+    let wordsSinceStrong = 0;
 
     const strongEndings = [".", "!", "?", "...", ";"];
-    let pendingWrap: {open: string; close: string} | null = null
+    let pendingWrap: { open: string; close: string } | null = null;
 
     while (merged.length < wordCount) {
-      while(merged.length === 0) {
-        const token = dictionary[Math.floor(Math.random() * dictionary.length)]
-        merged.push(token)
-        wordsSinceStrong = 1
+      while (merged.length === 0) {
+        const token = dictionary[Math.floor(Math.random() * dictionary.length)];
+        merged.push(token);
+        wordsSinceStrong = 1;
       }
 
-      let token: string
+      let token: string;
 
       if (includeNumbers && Math.random() < 0.18) {
-        token = pickNumbers()
+        token = pickNumbers();
       } else if (includePunctuation && Math.random() < 0.24) {
-        token = pickPunctuation()
+        token = pickPunctuation();
       } else {
-        token = dictionary[Math.floor(Math.random() * dictionary.length)]
+        token = dictionary[Math.floor(Math.random() * dictionary.length)];
       }
 
       if (includePunctuation && isPunctuation(token)) {
         if (isClosingChar(token)) {
-          continue
+          continue;
         }
 
-        const pair = findPairByOpen(token)
+        const pair = findPairByOpen(token);
         if (pair) {
-
-          if (merged.length === 0) continue
+          if (merged.length === 0) continue;
 
           if (merged.length > 0) {
             const lastWord = merged[merged.length - 1];
@@ -149,9 +146,8 @@ export default function useTypingGame(
           continue;
         }
 
-
         if (merged.length === 0) {
-          continue
+          continue;
         }
         const lastWord = merged[merged.length - 1];
         const lastTail = lastWord.slice(-3);
@@ -159,49 +155,48 @@ export default function useTypingGame(
           lastTail.endsWith(ending),
         );
         if (alreadyEndsWith) continue;
-        
-        const isStrong = strongEndings.includes(token)
+
+        const isStrong = strongEndings.includes(token);
         if (isStrong && wordsSinceStrong < 3) {
-          continue
+          continue;
         }
 
-        merged[merged.length - 1] += token
+        merged[merged.length - 1] += token;
         if (isStrong) {
-          wordsSinceStrong = 0
+          wordsSinceStrong = 0;
         }
-        continue
+        continue;
       }
-      
+
       if (pendingWrap) {
-        token = pendingWrap.open + token + pendingWrap.close
-        pendingWrap = null
+        token = pendingWrap.open + token + pendingWrap.close;
+        pendingWrap = null;
       }
-      merged.push(token)
-      wordsSinceStrong += 1
-      
-      for (let i = 0; i < merged.length-1; i++) {
-        const current = merged[i]
-        const next = merged[i+1]
-        if (!next) continue
+      merged.push(token);
+      wordsSinceStrong += 1;
 
-        const endsWithStrong = strongEndings.some((ending)=>
-          current.endsWith(ending)
-        )
-        if (!endsWithStrong) continue
-        merged[i + 1] = next.charAt(0).toUpperCase() + next.slice(1)
+      for (let i = 0; i < merged.length - 1; i++) {
+        const current = merged[i];
+        const next = merged[i + 1];
+        if (!next) continue;
+
+        const endsWithStrong = strongEndings.some((ending) =>
+          current.endsWith(ending),
+        );
+        if (!endsWithStrong) continue;
+        merged[i + 1] = next.charAt(0).toUpperCase() + next.slice(1);
       }
-
     }
 
     if (includePunctuation && merged.length > 0) {
-      const first = merged[0]
+      const first = merged[0];
       if (first && first.length > 0) {
-        merged[0] = first.charAt(0).toUpperCase() + first.slice(1)
+        merged[0] = first.charAt(0).toUpperCase() + first.slice(1);
       }
     }
 
-    return merged
-  }, [dictionary, wordCount, includeNumbers, includePunctuation])
+    return merged;
+  }, [dictionary, wordCount, includeNumbers, includePunctuation]);
 
   const [state, setState] = useState<TypingState>(() => {
     const words = generateWords();
@@ -219,33 +214,35 @@ export default function useTypingGame(
   const [finished, setFinished] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [historicalMistakes, setHistoricalMistakes] = useState(0);
-  const [wpmSamples, setWpmSamples] = useState<number[]>([])
-  const [allErrorsTimestamps, setAllErrorsTimestamps] = useState<number[]>([])
-  const [errorSamples, setErrorSamples] = useState<number[]>([])
+  const [wpmSamples, setWpmSamples] = useState<number[]>([]);
+  const [allErrorsTimestamps, setAllErrorsTimestamps] = useState<number[]>([]);
+  const [errorSamples, setErrorSamples] = useState<number[]>([]);
 
   const calculateConsistency = (samples: number[], minBaseLine = 1) => {
-    if (samples.length <= 1 ) return 100
-    const avg = samples.reduce((sum, value) => sum + value, 0)/samples.length
-    const baseLine = Math.max(Math.abs(avg), minBaseLine)
-    const variance = samples.reduce((sum, value) => sum + (value - avg) ** 2, 0) / samples.length
-    const std = Math.sqrt(variance)
-    const normalized = 100 - Math.min(100, (std / baseLine) * 100)
-    return Number.isFinite(normalized) ? Math.max(0, normalized) : 0
-  }
+    if (samples.length <= 1) return 100;
+    const avg = samples.reduce((sum, value) => sum + value, 0) / samples.length;
+    const baseLine = Math.max(Math.abs(avg), minBaseLine);
+    const variance =
+      samples.reduce((sum, value) => sum + (value - avg) ** 2, 0) /
+      samples.length;
+    const std = Math.sqrt(variance);
+    const normalized = 100 - Math.min(100, (std / baseLine) * 100);
+    return Number.isFinite(normalized) ? Math.max(0, normalized) : 0;
+  };
 
- const errorDeltaSamples = useMemo(() => {
-  return errorSamples.map((totalCount, index) => {
-    const prevTotal = index > 0 ? errorSamples[index - 1] : 0;
-    return [totalCount - prevTotal, index + 1] as [number, number];
-  });
-}, [errorSamples]);
+  const errorDeltaSamples = useMemo(() => {
+    return errorSamples.map((totalCount, index) => {
+      const prevTotal = index > 0 ? errorSamples[index - 1] : 0;
+      return [totalCount - prevTotal, index + 1] as [number, number];
+    });
+  }, [errorSamples]);
 
   const wpmConsistency = useMemo(
     () => calculateConsistency(wpmSamples),
-    [wpmSamples]
-  )
+    [wpmSamples],
+  );
 
-  const correctHistoricalMistakes = Math.floor(historicalMistakes / 2)
+  const correctHistoricalMistakes = Math.floor(historicalMistakes / 2);
 
   const isWordsGameComplete = useCallback(
     (draft: TypingState) => {
@@ -328,21 +325,21 @@ export default function useTypingGame(
     return () => window.clearInterval(id);
   }, [started, finished]);
 
-  const {addMs} = useDaylyStatsStore()
-  const prevElapsedRef = useRef(0)
+  const { addMs } = useDailyStatsStore();
+  const prevElapsedRef = useRef(0);
 
   useEffect(() => {
     if (!started || finished) {
-      prevElapsedRef.current = elapsedMs
-      return
+      prevElapsedRef.current = elapsedMs;
+      return;
     }
-    const delta = elapsedMs - prevElapsedRef.current
-    if (delta > 0) addMs(delta)
-    prevElapsedRef.current = elapsedMs
-  }, [started, finished, elapsedMs, addMs])
+    const delta = elapsedMs - prevElapsedRef.current;
+    if (delta > 0) addMs(delta);
+    prevElapsedRef.current = elapsedMs;
+  }, [started, finished, elapsedMs, addMs]);
 
   // Derived results: words per minute (wpm) and accuracy (acc)
-    const {
+  const {
     wpm,
     acc,
     correctLetters,
@@ -375,9 +372,12 @@ export default function useTypingGame(
         : elapsedMs / 1000;
 
     const minutes = elapsedSec > 0 ? elapsedSec / 60 : 0;
-    const wpmValue = minutes > 0 ? (correct / 5) / minutes : 0;
+    const wpmValue = minutes > 0 ? correct / 5 / minutes : 0;
     const correctWithHistorical = correct - correctHistoricalMistakes;
-    const normalizedCorrectHistoricalMistakes = Math.max(0, Math.min(typed, correctWithHistorical))
+    const normalizedCorrectHistoricalMistakes = Math.max(
+      0,
+      Math.min(typed, correctWithHistorical),
+    );
 
     const accValue =
       typed > 0 ? (normalizedCorrectHistoricalMistakes / typed) * 100 : 100;
@@ -390,16 +390,23 @@ export default function useTypingGame(
       extraLetters: extrasCount,
       totalTyped: typed,
     };
-  }, [state.statuses, state.extras, elapsedMs, mode, durationSeconds, historicalMistakes]);
+  }, [
+    state.statuses,
+    state.extras,
+    elapsedMs,
+    mode,
+    durationSeconds,
+    historicalMistakes,
+  ]);
 
   const elapsedSeconds = useMemo(
-    () => Math.floor( elapsedMs / 1000),
-    [elapsedMs]
-  )
+    () => Math.floor(elapsedMs / 1000),
+    [elapsedMs],
+  );
 
   useEffect(() => {
-    if (!started) return
-    if (elapsedSeconds <= 0) return
+    if (!started) return;
+    if (elapsedSeconds <= 0) return;
     setWpmSamples((prev) => {
       if (prev.length >= elapsedSeconds) return prev;
       return [...prev, wpm];
@@ -408,32 +415,31 @@ export default function useTypingGame(
     setErrorSamples((prev) => {
       if (prev.length >= elapsedSeconds) return prev;
       const errorsUpToSecond = allErrorsTimestamps.filter(
-        (timestamp) => timestamp <= elapsedSeconds
+        (timestamp) => timestamp <= elapsedSeconds,
       ).length;
       return [...prev, errorsUpToSecond];
     });
-  }, [started, elapsedSeconds, wpm, allErrorsTimestamps])
+  }, [started, elapsedSeconds, wpm, allErrorsTimestamps]);
 
   useEffect(() => {
-  if (!finished) return;
-  setWpmSamples((prev) => {
-    if (prev.length === 0 || prev[prev.length - 1] === wpm) return prev;
-    return [...prev, wpm];
-  });
-  setErrorSamples((prev) => {
-    if (prev.length === 0) {
+    if (!finished) return;
+    setWpmSamples((prev) => {
+      if (prev.length === 0 || prev[prev.length - 1] === wpm) return prev;
+      return [...prev, wpm];
+    });
+    setErrorSamples((prev) => {
+      if (prev.length === 0) {
+        const totalErrors = allErrorsTimestamps.length;
+        return totalErrors > 0 ? [...prev, totalErrors] : prev;
+      }
       const totalErrors = allErrorsTimestamps.length;
-      return totalErrors > 0 ? [...prev, totalErrors] : prev;
-    }
-    const totalErrors = allErrorsTimestamps.length;
-    const lastErrorCount = prev[prev.length - 1];
-    if (totalErrors !== lastErrorCount) {
-      return [...prev, totalErrors];
-    }
-    return prev;
-  });
-}, [finished, wpm, allErrorsTimestamps]);
-
+      const lastErrorCount = prev[prev.length - 1];
+      if (totalErrors !== lastErrorCount) {
+        return [...prev, totalErrors];
+      }
+      return prev;
+    });
+  }, [finished, wpm, allErrorsTimestamps]);
 
   const wordsCompleted = useMemo(() => {
     return state.statuses.reduce((total, row) => {
@@ -452,8 +458,8 @@ export default function useTypingGame(
   const navigate = useNavigate();
   const totalSeconds = elapsedMs / 1000;
 
-  useEffect(()=>{
-    if (!finished) return    
+  useEffect(() => {
+    if (!finished) return;
     navigate("/results", {
       state: {
         summary: {
@@ -474,10 +480,10 @@ export default function useTypingGame(
           errorDeltaSamples,
           wpmConsistency,
           historicalMistakes: correctHistoricalMistakes,
-          language: i18n.language
-        }
-      }
-    })
+          language: i18n.language,
+        },
+      },
+    });
   }, [
     finished,
     navigate,
@@ -689,7 +695,9 @@ export default function useTypingGame(
           const expected = currentWord[currentCharIndex] ?? "";
           if (currentCharIndex < currentWord.length) {
             const isCorrect = key === expected;
-            wordStatuses[currentCharIndex] = isCorrect ? "correct" : "incorrect";
+            wordStatuses[currentCharIndex] = isCorrect
+              ? "correct"
+              : "incorrect";
             if (!isCorrect && wasStarted) {
               setHistoricalMistakes((prev) => prev + 1);
               setAllErrorsTimestamps((prev) => {
@@ -733,7 +741,14 @@ export default function useTypingGame(
         setFinished(true);
       }
     },
-    [state.words.length, finished, started, mode, isWordsGameComplete, elapsedMs],
+    [
+      state.words.length,
+      finished,
+      started,
+      mode,
+      isWordsGameComplete,
+      elapsedMs,
+    ],
   );
 
   const handleBeforeInput = useCallback(
@@ -744,7 +759,8 @@ export default function useTypingGame(
 
       const isDelete = type === "deleteContentBackward";
       const isDeleteWord = type === "deleteWordBackward";
-      const isInsert = type === "insertText" || type === "insertCompositionText";
+      const isInsert =
+        type === "insertText" || type === "insertCompositionText";
 
       if (!isDelete && !isDeleteWord && !isInsert) return;
 
@@ -752,7 +768,7 @@ export default function useTypingGame(
 
       if (finished) return;
 
-      const key = isInsert ? (data || "") : "";
+      const key = isInsert ? data || "" : "";
       const isSpace = key === " ";
       const isLetter = isInsert && key.length > 0 && key !== " ";
 
@@ -922,7 +938,8 @@ export default function useTypingGame(
           if (!started) setStarted(true);
           const expected = currentWord[currentCharIndex] ?? "";
           if (currentCharIndex < currentWord.length) {
-            wordStatuses[currentCharIndex] = key === expected ? "correct" : "incorrect";
+            wordStatuses[currentCharIndex] =
+              key === expected ? "correct" : "incorrect";
             return finalize({
               words,
               currentWordIndex,
@@ -972,5 +989,6 @@ export default function useTypingGame(
     wordsCompleted,
     totalWords,
     historicalMistakes,
+    elapsedMs,
   };
 }

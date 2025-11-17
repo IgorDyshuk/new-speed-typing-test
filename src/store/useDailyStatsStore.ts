@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type DaylyStatsState = {
+type DailyStatsState = {
   dateKey: string;
   totalMs: number;
   addMs: (delta: number) => void;
@@ -10,7 +10,7 @@ type DaylyStatsState = {
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
-export const useDaylyStatsStore = create<DaylyStatsState>()(
+export const useDailyStatsStore = create<DailyStatsState>()(
   persist(
     (set, get) => ({
       dateKey: todayKey(),

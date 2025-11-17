@@ -1,7 +1,7 @@
 import { ChartAreaLegend } from "@/components/Chart/ChartArea";
 import RestartButton from "@/components/restartButton/RestartButton";
 import Tooltip from "@/components/tooltip/Tooltip";
-import { useDaylyStatsStore } from "@/store/useDailyStatsStore";
+import { useDailyStatsStore } from "@/store/useDailyStatsStore";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function ResultsPage() {
@@ -80,7 +80,7 @@ export default function ResultsPage() {
     `${summary.historicalMistakes}\u00A0incorrect`,
   ].join("\n");
 
-  const { totalMs } = useDaylyStatsStore();
+  const { totalMs } = useDailyStatsStore();
   const formatDuration = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -91,9 +91,9 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="bg-background mt-58 flex justify-center items-center">
+    <div className="bg-background mt-35 flex justify-center items-center">
       <div className="w-full flex justify-center flex-col">
-        <div className="w-full grid gap-7 grid-cols-[auto_1fr] text-sub pb-0.25 text-[1rem] leading-4">
+        <div className="w-full grid gap-7 grid-cols-[auto_1fr] text-sub pb-px text-[1rem] leading-4">
           <div className="flex flex-col gap-2">
             <Tooltip
               label={`${summary.wpm.toFixed(2)} wpm`}

@@ -143,7 +143,7 @@ export default function TestConfig({
         onClick={() => onTogglePunctuation(!withPunctuation)}
         className={`flex items-center gap-0.5 hover:cursor-pointer ${withPunctuation ? "text-main" : ""}`}
       >
-        <AtSign size={13} className="pt-[2px]" />
+        <AtSign size={13} className="pt-0.5" />
         punctuation
       </button>
       <button

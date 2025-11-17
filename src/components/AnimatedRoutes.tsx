@@ -2,6 +2,9 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import GamePage from "@/pages/GamePage.tsx";
 import ResultsPage from "@/pages/ResultsPage.tsx";
 import { AnimatePresence, easeInOut, motion } from "framer-motion";
+import StatisticPage from "@/pages/StatisticPage";
+
+//TODO: вынести блок с выбором темы в отдельный компонент в апп, чтобы тему можно было выбрать на любой странице
 
 export default function AnimatedRoutes() {
   const location = useLocation();
@@ -32,6 +35,19 @@ export default function AnimatedRoutes() {
               transition={{ duration: 0.175, ease: easeInOut }}
             >
               <ResultsPage />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/statistic"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.175, ease: easeInOut }}
+            >
+              <StatisticPage />
             </motion.div>
           }
         />
