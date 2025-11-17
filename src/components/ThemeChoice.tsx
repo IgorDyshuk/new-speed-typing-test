@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Paintbrush, Check } from "lucide-react";
 import { useTheme } from "@/components/themeProvider";
 import type { Theme } from "@/components/themeProvider";
@@ -11,6 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { useGameSessionStore } from "@/store/useGameSessionStore";
 
 function labelize(name: string) {
   return name
@@ -47,17 +48,20 @@ function Palette({ name }: { name: Theme }) {
   );
 }
 
-export function ThemeChoice({
-  onCloseFucusTyping,
-}: {
-  onCloseFucusTyping?: () => void;
-}) {
+export function ThemeChoice() {
   const { theme, setTheme, themes } = useTheme();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Theme>(theme);
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const revertingRef = useRef(false);
+
+  const focusInput = useGameSessionStore((state) => state.focusInput);
+  const focusTypingInput = useCallback(() => {
+    requestAnimationFrame(() => {
+      focusInput();
+    });
+  }, [focusInput]);
 
   useEffect(() => {
     setSelected(theme);
@@ -67,7 +71,7 @@ export function ThemeChoice({
     setSelected(name);
     setTheme(name);
     setOpen(false);
-    onCloseFucusTyping?.();
+    focusTypingInput();
   };
 
   const preview = (name: Theme) => {
@@ -105,63 +109,70 @@ export function ThemeChoice({
     }
   };
 
-  return (
-    <div className="mr-auto flex justify-end text-main">
-      <button
-        onMouseDown={(e) => {
-          e.preventDefault();
-          setOpen(true);
-        }}
-        onClick={() => setOpen(true)}
-        className="flex items-center justify-center gap-2 text-lg font-medium hover:cursor-pointer"
-      >
-        <Paintbrush className="w-5" />
-        {labelize(selected)}
-      </button>
+  const { started, finished } = useGameSessionStore();
+  const visibleTheme = started && !finished ? "opacity-0" : "opacity-100";
 
-      <CommandDialog
-        open={open}
-        onOpenChange={(v) => {
-          if (!v) {
-            revert();
-            onCloseFucusTyping?.();
-          }
-          setOpen(v);
-        }}
-        modal={false}
-      >
-        <CommandInput placeholder="Choose theme..." />
-        <CommandList
-          ref={listRef}
-          onMouseLeave={revert}
-          onKeyDown={onListKeyDown}
+  return (
+    <div
+      className={`absolute bottom-0 right-45 pt-50 transition-opacity duration-300 ${visibleTheme}`}
+    >
+      <div className="flex justify-end text-main">
+        <button
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setOpen(true);
+          }}
+          onClick={() => setOpen(true)}
+          className="flex items-center justify-center gap-2 hover:cursor-pointer"
         >
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup>
-            {themes.map((name: Theme) => {
-              const isSelected = selected === name;
-              return (
-                <CommandItem
-                  key={name}
-                  data-theme-name={name}
-                  onSelect={() => handleSelect(name)}
-                  onMouseEnter={() => preview(name)}
-                  aria-selected={isSelected}
-                  className="flex items-center gap-2"
-                >
-                  {isSelected ? (
-                    <Check className="w-4 h-4 shrink-0 text-main" />
-                  ) : (
-                    <span className="w-4 h-4" />
-                  )}
-                  {labelize(name)}
-                  <Palette name={name} />
-                </CommandItem>
-              );
-            })}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
+          <Paintbrush className="w-5" />
+          {labelize(selected)}
+        </button>
+
+        <CommandDialog
+          open={open}
+          onOpenChange={(v) => {
+            if (!v) {
+              revert();
+              focusTypingInput();
+            }
+            setOpen(v);
+          }}
+          modal={false}
+        >
+          <CommandInput placeholder="Choose theme..." />
+          <CommandList
+            ref={listRef}
+            onMouseLeave={revert}
+            onKeyDown={onListKeyDown}
+          >
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup>
+              {themes.map((name: Theme) => {
+                const isSelected = selected === name;
+                return (
+                  <CommandItem
+                    key={name}
+                    data-theme-name={name}
+                    onSelect={() => handleSelect(name)}
+                    onMouseEnter={() => preview(name)}
+                    aria-selected={isSelected}
+                    className="flex items-center gap-2"
+                  >
+                    {isSelected ? (
+                      <Check className="w-4 h-4 shrink-0 text-main" />
+                    ) : (
+                      <span className="w-4 h-4" />
+                    )}
+                    {labelize(name)}
+                    <Palette name={name} />
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
+      </div>
     </div>
   );
 }

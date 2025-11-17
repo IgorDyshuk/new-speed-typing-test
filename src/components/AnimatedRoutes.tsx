@@ -4,8 +4,6 @@ import ResultsPage from "@/pages/ResultsPage.tsx";
 import { AnimatePresence, easeInOut, motion } from "framer-motion";
 import StatisticPage from "@/pages/StatisticPage";
 
-//TODO: вынести блок с выбором темы в отдельный компонент в апп, чтобы тему можно было выбрать на любой странице
-
 export default function AnimatedRoutes() {
   const location = useLocation();
 

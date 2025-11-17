@@ -137,7 +137,7 @@ export default function TestConfig({
   };
 
   return (
-    <div className="flex items-center gap-7 bg-sub-alt text-sub w-fit text-[12px] leading-[12px] pl-4 pr-2 py-1.5 rounded-md">
+    <div className="flex items-center gap-7 bg-sub-alt text-sub w-fit text-[12px] leading-3 pl-4 pr-2 py-1.5 rounded-md">
       <button
         type="button"
         onClick={() => onTogglePunctuation(!withPunctuation)}
@@ -180,7 +180,7 @@ export default function TestConfig({
       </button>
       <div className="w-2 h-6 bg-background rounded-2xl" />
       <div
-        className={`relative min-h-[2px] min-w-[200px] flex-1 transition-opacity duration-150 ${
+        className={`relative min-h-0.5 min-w-[200px] flex-1 transition-opacity duration-150 ${
           panelPhase === "fade-out" ? "opacity-0" : "opacity-100"
         }`}
       >

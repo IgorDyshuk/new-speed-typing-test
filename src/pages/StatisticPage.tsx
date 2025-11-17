@@ -2,7 +2,6 @@ import EditAccountButton from "@/components/EditAccountButton";
 import formateTime from "@/lib/formatTime";
 import { useAccountStore } from "@/store/useAccountStore";
 import { RiAccountCircleFill } from "react-icons/ri";
-//TODO: добавить кнопку чтобы ты мог редактировать свое имя
 //TODO: добавить таблицу с лучшими результатами (только для заранее поставленных значениях теста)
 //TODO: сдлать таблицу со средней статистикой по аккаунту
 //TODO: сделать список с последними 10 тестами

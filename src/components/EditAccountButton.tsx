@@ -24,7 +24,7 @@ export default function EditAccountButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="absolute right-0 h-full hover:bg-text hover:cursor-pointer hover:text-background px-1.5 rounded-r-xl">
+        <button className="absolute right-0 h-full hover:bg-text hover:cursor-pointer hover:text-background px-1.5 rounded-r-xl transition-color duration-200">
           <PenLine />
         </button>
       </DialogTrigger>

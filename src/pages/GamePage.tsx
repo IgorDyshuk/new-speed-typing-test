@@ -1,6 +1,5 @@
 import WordList from "@/components/WordList";
 import { LangChoice } from "@/components/LangChoice.tsx";
-import { ThemeChoice } from "@/components/ThemeChoice";
 import CountdownTimer from "@/components/CountdownTimer";
 import RestartButton from "@/components/restartButton/RestartButton.tsx";
 import useTypingGame, { type LetterStatus } from "@/hooks/useTypingGame";
@@ -195,9 +194,15 @@ export default function GamePage() {
   }, []);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const setFocusInput = useGameSessionStore((state) => state.setFocusInput);
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+  useEffect(() => {
+    const focusFn = () => inputRef.current?.focus();
+    setFocusInput(focusFn);
+    return () => setFocusInput(() => {});
+  }, [setFocusInput]);
 
   const [idle, setIdle] = useState(false);
   const INACTIVITY_MS = 5000;
@@ -254,160 +259,149 @@ export default function GamePage() {
   }, [handleRestart, setRestart]);
 
   return (
-    <div className="bg-background">
-      <main className="flex items-center flex-col">
-        <div
-          className={`transition-opacity duration-300 ${
-            !started ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <TestConfig
-            duration={duration}
-            onChangeDuration={(s) => {
-              setDuration(s);
-              restart();
-              requestAnimationFrame(() => {
-                inputRef.current?.focus();
-              });
-            }}
-            wordCount={wordCount}
-            onWordCount={(n) => {
-              setWordCount(n);
-              restart();
-              requestAnimationFrame(() => {
-                inputRef.current?.focus();
-              });
-            }}
-            mode={mode}
-            onModeChange={(nextMode) => {
-              setMode(nextMode);
-              setWordCount(100);
-              restart();
-              requestAnimationFrame(() => {
-                inputRef.current?.focus();
-              });
-            }}
-            withNumbers={withNumbers}
-            onToggleNumbers={(next) => {
-              setWithNumbers(next);
-              restart();
-              requestAnimationFrame(() => {
-                inputRef.current?.focus();
-              });
-            }}
-            withPunctuation={withPunctuation}
-            onTogglePunctuation={(next) => {
-              setWithPunctuation(next);
-              restart();
-              requestAnimationFrame(() => {
-                inputRef.current?.focus();
-              });
-            }}
-          />
-        </div>
-        <div
-          id="typingTest"
-          className={`relative pt-37 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
-            wordsPhase === "fade-out" || wordsPhase === "initial"
-              ? "opacity-0"
-              : "opacity-100"
-          }`}
-        >
-          <div className="grid grid-cols-3 items-center w-full">
-            <div className="justify-self-start">
-              {mode === "time" ? (
-                <div
-                  className={`transition-opacity duration-300 ${
-                    started && !finished ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  <CountdownTimer timeLeft={timeLeft} />
-                </div>
-              ) : (
-                <div
-                  className={`text-main text-[2rem] transition-opacity duration-300 ${
-                    started && !finished ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  {wordsCompleted} / {totalWords}
-                </div>
-              )}
-            </div>
-            <div
-              className={`justify-self-center transition-opacity duration-300 ${!started ? "opacity-100" : "opacity-0"}`}
-            >
-              <LangChoice
-                onCloseFucusTyping={() =>
-                  requestAnimationFrame(() => inputRef.current?.focus())
-                }
-              />
-            </div>
-            <div />
-          </div>
-          <div
-            className="relative w-full typing-area"
-            onClick={() => inputRef.current?.focus()}
-          >
-            <div className="relative z-10">
-              <WordList
-                words={renderWords}
-                statuses={renderStatuses}
-                extras={renderExtras}
-                currentWordIndex={currentWordIndex}
-                currentCharIndex={currentCharIndex}
-                started={started}
-                finished={finished}
-                idle={idle}
-                mode={mode}
-              />
-              <ModalBlur />
-            </div>
-            <input
-              ref={inputRef}
-              type="text"
-              inputMode="text"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-              autoFocus
-              onKeyDown={(e) => {
-                touchActivity();
-                handleKeyDown(e);
-              }}
-              onBeforeInput={(e) => {
-                touchActivity();
-                handleBeforeInput(e);
-              }}
-              onChange={(e) => {
-                e.currentTarget.value = "";
-              }}
-              onFocus={() => {
-                if (started && !finished) touchActivity();
-              }}
-              onBlur={clearInactivityTimer}
-              defaultValue=""
-              className="absolute inset-0 z-0 opacity-0 pointer-events-none"
-              aria-hidden
-            />
-          </div>
-
-          <div
-            className={`transition-opacity duration-300`}
-            onClick={handleRestart}
-          >
-            <RestartButton />
-          </div>
-        </div>
-      </main>
+    <main className="flex items-center flex-col">
       <div
-        className={`mt-35 transition-opacity duration-300 ${!started ? "opacity-100" : "opacity-0"}`}
+        className={`transition-opacity duration-300 ${
+          !started ? "opacity-100" : "opacity-0"
+        }`}
       >
-        <ThemeChoice
-          onCloseFucusTyping={() =>
-            requestAnimationFrame(() => inputRef.current?.focus())
-          }
+        <TestConfig
+          duration={duration}
+          onChangeDuration={(s) => {
+            setDuration(s);
+            restart();
+            requestAnimationFrame(() => {
+              inputRef.current?.focus();
+            });
+          }}
+          wordCount={wordCount}
+          onWordCount={(n) => {
+            setWordCount(n);
+            restart();
+            requestAnimationFrame(() => {
+              inputRef.current?.focus();
+            });
+          }}
+          mode={mode}
+          onModeChange={(nextMode) => {
+            setMode(nextMode);
+            setWordCount(100);
+            restart();
+            requestAnimationFrame(() => {
+              inputRef.current?.focus();
+            });
+          }}
+          withNumbers={withNumbers}
+          onToggleNumbers={(next) => {
+            setWithNumbers(next);
+            restart();
+            requestAnimationFrame(() => {
+              inputRef.current?.focus();
+            });
+          }}
+          withPunctuation={withPunctuation}
+          onTogglePunctuation={(next) => {
+            setWithPunctuation(next);
+            restart();
+            requestAnimationFrame(() => {
+              inputRef.current?.focus();
+            });
+          }}
         />
       </div>
-    </div>
+      <div
+        id="typingTest"
+        className={`relative pt-37 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
+          wordsPhase === "fade-out" || wordsPhase === "initial"
+            ? "opacity-0"
+            : "opacity-100"
+        }`}
+      >
+        <div className="grid grid-cols-3 items-center w-full">
+          <div className="justify-self-start">
+            {mode === "time" ? (
+              <div
+                className={`transition-opacity duration-300 ${
+                  started && !finished ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <CountdownTimer timeLeft={timeLeft} />
+              </div>
+            ) : (
+              <div
+                className={`text-main text-[2rem] transition-opacity duration-300 ${
+                  started && !finished ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                {wordsCompleted} / {totalWords}
+              </div>
+            )}
+          </div>
+          <div
+            className={`justify-self-center transition-opacity duration-300 ${!started ? "opacity-100" : "opacity-0"}`}
+          >
+            <LangChoice
+              onCloseFucusTyping={() =>
+                requestAnimationFrame(() => inputRef.current?.focus())
+              }
+            />
+          </div>
+          <div />
+        </div>
+        <div
+          className="relative w-full typing-area"
+          onClick={() => inputRef.current?.focus()}
+        >
+          <div className="relative z-10">
+            <WordList
+              words={renderWords}
+              statuses={renderStatuses}
+              extras={renderExtras}
+              currentWordIndex={currentWordIndex}
+              currentCharIndex={currentCharIndex}
+              started={started}
+              finished={finished}
+              idle={idle}
+              mode={mode}
+            />
+            <ModalBlur />
+          </div>
+          <input
+            ref={inputRef}
+            type="text"
+            inputMode="text"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            autoFocus
+            onKeyDown={(e) => {
+              touchActivity();
+              handleKeyDown(e);
+            }}
+            onBeforeInput={(e) => {
+              touchActivity();
+              handleBeforeInput(e);
+            }}
+            onChange={(e) => {
+              e.currentTarget.value = "";
+            }}
+            onFocus={() => {
+              if (started && !finished) touchActivity();
+            }}
+            onBlur={clearInactivityTimer}
+            defaultValue=""
+            className="absolute inset-0 z-0 opacity-0 pointer-events-none"
+            aria-hidden
+          />
+        </div>
+
+        <div
+          className={`transition-opacity duration-300`}
+          onClick={handleRestart}
+        >
+          <RestartButton />
+        </div>
+      </div>
+    </main>
   );
 }
