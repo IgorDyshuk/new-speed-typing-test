@@ -1,8 +1,13 @@
 import { ChartAreaLegend } from "@/components/Chart/ChartArea";
 import RestartButton from "@/components/restartButton/RestartButton";
 import Tooltip from "@/components/tooltip/Tooltip";
+import { getLanguageLabel } from "@/lib/formatLanguage";
 import formateTime from "@/lib/formatTime";
-import { TIME_TEST_PRESETS, useAccountStore } from "@/store/useAccountStore";
+import {
+  TIME_TEST_PRESETS,
+  useAccountStore,
+  WORD_TEST_PRESETS,
+} from "@/store/useAccountStore";
 import { useDailyStatsStore } from "@/store/useDailyStatsStore";
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -40,30 +45,7 @@ export default function ResultsPage() {
     return null;
   }
 
-  const languageNameMap: Record<string, string> = {
-    en: "english",
-    de: "german",
-    fr: "french",
-    es: "spanish",
-    it: "italian",
-    pt: "portuguese",
-    nl: "dutch",
-    pl: "polish",
-    ru: "russian",
-    uk: "ukrainian",
-    cs: "czech",
-    hu: "hungarian",
-
-    zh: "chinese",
-    ja: "japanese",
-    ko: "korean",
-
-    sv: "swedish",
-    tr: "turkish",
-    ar: "arabic",
-    hi: "hindi",
-    ro: "romanian",
-  };
+  const languageLabel = getLanguageLabel(summary.language);
 
   const wpmChartData = summary.wpmSamples.map((value, index) => ({
     second: index + 1,
@@ -84,26 +66,43 @@ export default function ResultsPage() {
   ].join("\n");
 
   const { totalMs } = useDailyStatsStore();
-
   const updateBestTimeResult = useAccountStore((s) => s.updateBestTimeResult);
+  const updateBestWordResult = useAccountStore((s) => s.updateBestWordResult);
+
   const hasSyncedBestRef = useRef(false);
 
   useEffect(() => {
-    if (!summary || summary.mode !== "time") return;
+    if (!summary) return;
     if (hasSyncedBestRef.current) return;
-    const duration = Math.round(summary.durationSeconds);
-    const preset = TIME_TEST_PRESETS.find((value) => value === duration);
-    if (!preset) return;
+    if (summary.mode === "time") {
+      const duration = Math.round(summary.durationSeconds);
+      const preset = TIME_TEST_PRESETS.find((value) => value === duration);
+      if (!preset) return;
 
-    updateBestTimeResult(preset, {
-      wpm: summary.wpm,
-      acc: summary.acc,
-      con: summary.wpmConsistency,
-      language: summary.language,
-      completedAt: new Date().toISOString(),
-      includeNumbers: summary.includeNumbers,
-      includePunctuation: summary.includePunctuation,
-    });
+      updateBestTimeResult(preset, {
+        wpm: summary.wpm,
+        acc: summary.acc,
+        con: summary.wpmConsistency,
+        language: summary.language,
+        completedAt: new Date().toISOString(),
+        includeNumbers: summary.includeNumbers,
+        includePunctuation: summary.includePunctuation,
+      });
+    } else if (summary.mode === "words") {
+      const words = Math.round(summary.totalWords);
+      const preset = WORD_TEST_PRESETS.find((value) => value === words);
+      if (!preset) return;
+
+      updateBestWordResult(preset, {
+        wpm: summary.wpm,
+        acc: summary.acc,
+        con: summary.wpmConsistency,
+        language: summary.language,
+        completedAt: new Date().toISOString(),
+        includeNumbers: summary.includeNumbers,
+        includePunctuation: summary.includePunctuation,
+      });
+    }
   });
 
   return (
@@ -149,7 +148,7 @@ export default function ResultsPage() {
                   ? Math.round(summary.durationSeconds)
                   : Math.round(summary.totalWords)}
               </p>
-              <p>{languageNameMap[summary.language] ?? summary.language}</p>
+              <p>{languageLabel}</p>
               {summary.includeNumbers && <p>numbers</p>}
               {summary.includePunctuation && <p>withPunctuation</p>}
             </div>

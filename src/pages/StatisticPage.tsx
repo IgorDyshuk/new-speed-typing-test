@@ -2,9 +2,12 @@ import BestPresetResult from "@/components/BestPresetResult";
 import EditAccountButton from "@/components/EditAccountButton";
 import formattedDate from "@/lib/formatDate";
 import formateTime from "@/lib/formatTime";
-import { TIME_TEST_PRESETS, useAccountStore } from "@/store/useAccountStore";
+import {
+  TIME_TEST_PRESETS,
+  useAccountStore,
+  WORD_TEST_PRESETS,
+} from "@/store/useAccountStore";
 import { RiAccountCircleFill } from "react-icons/ri";
-//TODO: добавить таблицу с лучшими результатами (только для заранее поставленных значениях теста)
 //TODO: сдлать таблицу со средней статистикой по аккаунту
 //TODO: сделать список с последними 10 тестами
 
@@ -48,13 +51,17 @@ export default function StatisticPage() {
         <EditAccountButton />
       </div>
 
-      <div className="mt-18 bg-sub-alt rounded-xl flex text-sub items-center justify-between gap-5 py-6 px-10">
-        {TIME_TEST_PRESETS.map((preset) => {
-          return <BestPresetResult preset={preset} />;
-        })}
-        {TIME_TEST_PRESETS.map((preset) => {
-          return <BestPresetResult preset={preset} />;
-        })}
+      <div className="mt-18 flex justify-between items-center gap-8">
+        <div className="bg-sub-alt rounded-xl flex text-sub items-center justify-between gap-5 py-6 px-10 w-full">
+          {TIME_TEST_PRESETS.map((preset) => {
+            return <BestPresetResult preset={preset} mode="time" />;
+          })}
+        </div>
+        <div className="bg-sub-alt rounded-xl flex text-sub items-center justify-between gap-5 py-6 px-10 w-full">
+          {WORD_TEST_PRESETS.map((preset) => {
+            return <BestPresetResult preset={preset} mode="words" />;
+          })}
+        </div>
       </div>
     </div>
   );

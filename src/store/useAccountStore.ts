@@ -2,9 +2,11 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export const TIME_TEST_PRESETS = [10, 30, 60, 120] as const;
+export const WORD_TEST_PRESETS = [10, 25, 50, 100] as const;
 export type TimeTestPresets = (typeof TIME_TEST_PRESETS)[number];
+export type WordTestPresets = (typeof WORD_TEST_PRESETS)[number];
 
-type BestTimeResults = {
+type BestTestResults = {
   wpm: number;
   acc: number;
   con: number;
@@ -27,21 +29,37 @@ type AccountState = {
   totalTypingMs: number;
   addTypingMs: (delta: number) => void;
 
-  bestTimeResults: Record<TimeTestPresets, BestTimeResults | null>;
+  bestTimeResults: Record<TimeTestPresets, BestTestResults | null>;
   updateBestTimeResult: (
     duration: TimeTestPresets,
-    result: BestTimeResults,
+    result: BestTestResults,
+  ) => void;
+
+  bestWordResults: Record<WordTestPresets, BestTestResults | null>;
+  updateBestWordResult: (
+    words: WordTestPresets,
+    result: BestTestResults,
   ) => void;
 };
 
-const buildInitialBestResults = (): Record<
+const buildInitialBestTestResults = (): Record<
   TimeTestPresets,
-  BestTimeResults | null
+  BestTestResults | null
 > => ({
   10: null,
   30: null,
   60: null,
   120: null,
+});
+
+const buildInitialBestWordResults = (): Record<
+  WordTestPresets,
+  BestTestResults | null
+> => ({
+  10: null,
+  25: null,
+  50: null,
+  100: null,
 });
 
 export const useAccountStore = create<AccountState>()(
@@ -72,7 +90,7 @@ export const useAccountStore = create<AccountState>()(
       addTypingMs: (delta) =>
         set((state) => ({ totalTypingMs: state.totalTypingMs + delta })),
 
-      bestTimeResults: buildInitialBestResults(),
+      bestTimeResults: buildInitialBestTestResults(),
       updateBestTimeResult: (duration, result) =>
         set((state) => {
           const prev = state.bestTimeResults[duration];
@@ -81,6 +99,19 @@ export const useAccountStore = create<AccountState>()(
             bestTimeResults: {
               ...state.bestTimeResults,
               [duration]: result,
+            },
+          };
+        }),
+
+      bestWordResults: buildInitialBestWordResults(),
+      updateBestWordResult: (words, result) =>
+        set((state) => {
+          const prev = state.bestWordResults[words];
+          if (prev && prev.wpm >= result.wpm) return state;
+          return {
+            bestWordResults: {
+              ...state.bestWordResults,
+              [words]: result,
             },
           };
         }),

@@ -1,17 +1,32 @@
 import formattedDate from "@/lib/formatDate";
 import { getLanguageLabel } from "@/lib/formatLanguage";
-import { useAccountStore, type TimeTestPresets } from "@/store/useAccountStore";
+import {
+  useAccountStore,
+  type TimeTestPresets,
+  type WordTestPresets,
+} from "@/store/useAccountStore";
+//TODO: сделать модалку с подробным описанием лучшего результата теста
 
 type BestPresetResultProps = {
-  preset: TimeTestPresets;
+  preset: TimeTestPresets | WordTestPresets;
+  mode: "time" | "words";
 };
 
-export default function BestPresetResult({ preset }: BestPresetResultProps) {
-  const bestResult = useAccountStore((state) => state.bestTimeResults[preset]);
+export default function BestPresetResult({
+  preset,
+  mode,
+}: BestPresetResultProps) {
+  const bestResult = useAccountStore((state) =>
+    mode === "time"
+      ? state.bestTimeResults[preset as TimeTestPresets]
+      : state.bestWordResults[preset as WordTestPresets],
+  );
   if (!bestResult) {
     return (
       <div key={preset} className="flex flex-col items-center gap-[0.25em]">
-        <p className="text-sm ">{preset} seconds</p>
+        <p className="text-sm ">
+          {preset} {mode === "time" ? "seconds" : "words"}
+        </p>
         <p className="text-4xl text-text pt-2">-</p>
         <p className="text-text text-[1.5rem] opacity-75">-</p>
       </div>
@@ -26,7 +41,9 @@ export default function BestPresetResult({ preset }: BestPresetResultProps) {
       key={preset}
       className="relative flex flex-col items-center gap-[0.25em] group"
     >
-      <p className="text-sm text-[13px] leading-5.5">{preset} seconds</p>
+      <p className="text-sm text-[13px] leading-5.5">
+        {preset} {mode === "time" ? "seconds" : "words"}
+      </p>
       <p className="text-4xl text-text pt-2">{Math.floor(bestResult.wpm)}</p>
       <p className="text-text text-[1.5rem] opacity-75">
         {Math.floor(bestResult.acc)}%
@@ -34,7 +51,9 @@ export default function BestPresetResult({ preset }: BestPresetResultProps) {
 
       {bestResult && (
         <div className="pointer-events-none absolute -top-4 w-max rounded-md bg-sub-alt px-3 py-2 text-[13px] leading-5.5 flex flex-col items-center text-text opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-          <p className="text-sub">{preset} seconds</p>
+          <p className="text-sub">
+            {preset} {mode === "time" ? "seconds" : "words"}
+          </p>
           <p className="">{Math.floor(bestResult.wpm)} wpm</p>
           <p className="">{Math.floor(bestResult.acc)}% acc</p>
           <p className="">{Math.floor(bestResult.con)}% con</p>
