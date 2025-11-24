@@ -13,6 +13,7 @@ import {
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguageStore } from "@/store/useLanguageStore";
+import { LANGUAGES } from "@/lib/formatLanguage";
 
 export function LangChoice({
   onCloseFucusTyping,
@@ -25,33 +26,10 @@ export function LangChoice({
   const selectedLanguage = useLanguageStore((state) => state.language);
   const setSelectedLanguage = useLanguageStore((state) => state.setLanguage);
 
-  const languages = [
-    { label: "english", code: "en" },
-    { label: "german", code: "de" },
-    { label: "french", code: "fr" },
-    { label: "spanish", code: "es" },
-    { label: "italian", code: "it" },
-    { label: "portuguese", code: "pt" },
-    { label: "dutch", code: "nl" },
-    { label: "polish", code: "pl" },
-    { label: "russian", code: "ru" },
-    { label: "ukrainian", code: "uk" },
-    { label: "czech", code: "cs" },
-    { label: "hungarian", code: "hu" },
-
-    { label: "chinese", code: "zh" },
-    { label: "japanese", code: "ja" },
-    { label: "korean", code: "ko" },
-
-    { label: "swedish", code: "sv" },
-    { label: "turkish", code: "tr" },
-    { label: "arabic", code: "ar" },
-    { label: "hindi", code: "hi" },
-    { label: "romanian", code: "ro" },
-  ];
+  const activeLanguageCode = selectedLanguage ?? LANGUAGES[0].code;
 
   const activeLanguage =
-    languages.find((lang) => lang.code === selectedLanguage) ?? languages[0];
+    LANGUAGES.find((lang) => lang.code === activeLanguageCode) ?? LANGUAGES[0];
 
   useEffect(() => {
     if (i18n.language !== activeLanguage.code) {
@@ -82,7 +60,7 @@ export function LangChoice({
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup>
-            {languages.map((lang) => {
+            {LANGUAGES.map((lang) => {
               const isSelectedLanguage = activeLanguage.code === lang.label;
               return (
                 <CommandItem

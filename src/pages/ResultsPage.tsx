@@ -2,7 +2,9 @@ import { ChartAreaLegend } from "@/components/Chart/ChartArea";
 import RestartButton from "@/components/restartButton/RestartButton";
 import Tooltip from "@/components/tooltip/Tooltip";
 import formateTime from "@/lib/formatTime";
+import { TIME_TEST_PRESETS, useAccountStore } from "@/store/useAccountStore";
 import { useDailyStatsStore } from "@/store/useDailyStatsStore";
+import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function ResultsPage() {
@@ -82,6 +84,27 @@ export default function ResultsPage() {
   ].join("\n");
 
   const { totalMs } = useDailyStatsStore();
+
+  const updateBestTimeResult = useAccountStore((s) => s.updateBestTimeResult);
+  const hasSyncedBestRef = useRef(false);
+
+  useEffect(() => {
+    if (!summary || summary.mode !== "time") return;
+    if (hasSyncedBestRef.current) return;
+    const duration = Math.round(summary.durationSeconds);
+    const preset = TIME_TEST_PRESETS.find((value) => value === duration);
+    if (!preset) return;
+
+    updateBestTimeResult(preset, {
+      wpm: summary.wpm,
+      acc: summary.acc,
+      con: summary.wpmConsistency,
+      language: summary.language,
+      completedAt: new Date().toISOString(),
+      includeNumbers: summary.includeNumbers,
+      includePunctuation: summary.includePunctuation,
+    });
+  });
 
   return (
     <div className="bg-background mt-32 flex justify-center items-center">
