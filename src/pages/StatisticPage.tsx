@@ -1,5 +1,6 @@
 import BestPresetResult from "@/components/BestPresetResult";
 import EditAccountButton from "@/components/EditAccountButton";
+import ResultTable from "@/components/ResultsTable";
 import formattedDate from "@/lib/formatDate";
 import formateTime from "@/lib/formatTime";
 import {
@@ -9,7 +10,6 @@ import {
 } from "@/store/useAccountStore";
 import { RiAccountCircleFill } from "react-icons/ri";
 //TODO: сдлать таблицу со средней статистикой по аккаунту
-//TODO: сделать список с последними 10 тестами
 
 export default function StatisticPage() {
   const { username, createdAt, testStarted, testCompleted, totalTypingMs } =
@@ -17,7 +17,7 @@ export default function StatisticPage() {
   const formattedUsername = username.trim();
 
   return (
-    <div>
+    <div className="mb-18">
       <div className="bg-sub-alt rounded-xl flex text-sub items-center relative">
         <div className="flex items-center py-6 pl-5">
           <RiAccountCircleFill className="h-23 w-23" />
@@ -51,18 +51,20 @@ export default function StatisticPage() {
         <EditAccountButton />
       </div>
 
-      <div className="mt-18 flex justify-between items-center gap-8">
-        <div className="bg-sub-alt rounded-xl flex text-sub items-center justify-between gap-5 py-6 px-10 w-full">
+      <div className="my-18 flex justify-between items-center gap-8">
+        <div className="bg-sub-alt rounded-xl flex text-sub items-center justify-between gap-5 py-5 px-12 w-full">
           {TIME_TEST_PRESETS.map((preset) => {
             return <BestPresetResult preset={preset} mode="time" />;
           })}
         </div>
-        <div className="bg-sub-alt rounded-xl flex text-sub items-center justify-between gap-5 py-6 px-10 w-full">
+        <div className="bg-sub-alt rounded-xl flex text-sub items-center justify-between gap-5 py-5 px-12 w-full">
           {WORD_TEST_PRESETS.map((preset) => {
             return <BestPresetResult preset={preset} mode="words" />;
           })}
         </div>
       </div>
+
+      <ResultTable />
     </div>
   );
 }

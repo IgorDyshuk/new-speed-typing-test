@@ -12,6 +12,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useGameSessionStore } from "@/store/useGameSessionStore";
+import { useLocation } from "react-router-dom";
 
 function labelize(name: string) {
   return name
@@ -52,6 +53,7 @@ export function ThemeChoice() {
   const { theme, setTheme, themes } = useTheme();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Theme>(theme);
+  const { pathname } = useLocation();
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const revertingRef = useRef(false);
@@ -111,10 +113,12 @@ export function ThemeChoice() {
 
   const { started, finished } = useGameSessionStore();
   const visibleTheme = started && !finished ? "opacity-0" : "opacity-100";
+  const isStatistic = pathname === "/statistic";
+  const positionClass = isStatistic ? "mt-28" : "absolute bottom-0 right-45";
 
   return (
     <div
-      className={`absolute bottom-0 right-45 pt-50 transition-opacity duration-300 ${visibleTheme}`}
+      className={`${positionClass} transition-opacity duration-300 ${visibleTheme}`}
     >
       <div className="flex justify-end text-main">
         <button

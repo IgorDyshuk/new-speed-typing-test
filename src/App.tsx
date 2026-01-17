@@ -4,7 +4,6 @@ import { ThemeProvider } from "./components/themeProvider";
 import { Toaster } from "sonner";
 import AnimatedRoutes from "./components/AnimatedRoutes";
 import Header from "./components/Header";
-import { ThemeChoice } from "./components/ThemeChoice";
 
 function App() {
   const queryClient = new QueryClient();
@@ -16,7 +15,6 @@ function App() {
           <HashRouter>
             <Header />
             <AnimatedRoutes />
-            <ThemeChoice />
           </HashRouter>
           <Toaster richColors />
         </QueryClientProvider>

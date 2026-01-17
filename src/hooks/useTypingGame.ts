@@ -1,5 +1,6 @@
 import i18n from "@/i18n";
 import { useDailyStatsStore } from "@/store/useDailyStatsStore";
+import { useLatestStore } from "@/store/useLatestResults";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -455,9 +456,17 @@ export default function useTypingGame(
 
   const navigate = useNavigate();
   const totalSeconds = elapsedMs / 1000;
+  const addResult = useLatestStore((state) => state.addResult);
+  const hasSavedResultRef = useRef(false);
 
   useEffect(() => {
-    if (!finished) return;
+    if (!finished) {
+      hasSavedResultRef.current = false;
+      return;
+    }
+    if (hasSavedResultRef.current) return;
+    hasSavedResultRef.current = true;
+    const completedAt = new Date().toISOString();
     navigate("/results", {
       state: {
         summary: {
@@ -482,6 +491,15 @@ export default function useTypingGame(
         },
       },
     });
+    addResult({
+      wpm,
+      accuracy: acc,
+      consistency: wpmConsistency,
+      totals: { totalTyped, correctLetters, incorrectLetters, extraLetters },
+      mode,
+      lasting: mode === "time" ? durationSeconds : totalWords,
+      completedAt,
+    });
   }, [
     finished,
     navigate,
@@ -501,6 +519,7 @@ export default function useTypingGame(
     wpmSamples,
     errorDeltaSamples,
     wpmConsistency,
+    addResult,
     i18n.language,
   ]);
 

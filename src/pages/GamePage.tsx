@@ -311,7 +311,7 @@ export default function GamePage() {
       </div>
       <div
         id="typingTest"
-        className={`relative pt-37 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
+        className={`relative pt-53 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
           wordsPhase === "fade-out" || wordsPhase === "initial"
             ? "opacity-0"
             : "opacity-100"

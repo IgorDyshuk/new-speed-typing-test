@@ -106,7 +106,7 @@ export default function ResultsPage() {
   });
 
   return (
-    <div className="bg-background mt-32 flex justify-center items-center">
+    <div className="bg-background mt-52 flex justify-center items-center">
       <div className="w-full flex justify-center flex-col">
         <div className="w-full grid gap-7 grid-cols-[auto_1fr] text-sub pb-px text-[1rem] leading-4">
           <div className="flex flex-col gap-2">

@@ -3,6 +3,7 @@ import GamePage from "@/pages/GamePage.tsx";
 import ResultsPage from "@/pages/ResultsPage.tsx";
 import { AnimatePresence, easeInOut, motion } from "framer-motion";
 import StatisticPage from "@/pages/StatisticPage";
+import { ThemeChoice } from "./ThemeChoice";
 
 export default function AnimatedRoutes() {
   const location = useLocation();
@@ -50,6 +51,15 @@ export default function AnimatedRoutes() {
           }
         />
       </Routes>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2, ease: easeInOut }}
+      >
+        <ThemeChoice />
+        <div className="text-background">.</div>
+      </motion.div>
     </AnimatePresence>
   );
 }
