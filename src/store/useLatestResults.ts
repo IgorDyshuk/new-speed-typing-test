@@ -2,7 +2,7 @@ import type { TestMode } from "@/hooks/useTypingGame";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type Result = {
+export type Result = {
   wpm: number;
   accuracy: number;
   consistency: number;
@@ -41,13 +41,12 @@ export const useLatestStore = create<LatestResultsState>()(
         const state = persisted as Partial<LatestResultsState>;
         const resultsWithTotals = (state.results ?? []).map((r) => ({
           ...r,
-          totals:
-            r.totals ?? {
-              totalTyped: 0,
-              correctLetters: 0,
-              incorrectLetters: 0,
-              extraLetters: 0,
-            },
+          totals: r.totals ?? {
+            totalTyped: 0,
+            correctLetters: 0,
+            incorrectLetters: 0,
+            extraLetters: 0,
+          },
         }));
         return { ...state, results: resultsWithTotals } as LatestResultsState;
       },

@@ -12,7 +12,7 @@ type SortKey =
 
 type DirectionType = "asc" | "desc";
 
-export default function ResultTable() {
+export default function LastResultTable() {
   const results = useLatestStore((state) => state.results);
 
   const [sortBy, setSortBy] = useState<SortKey>("date");

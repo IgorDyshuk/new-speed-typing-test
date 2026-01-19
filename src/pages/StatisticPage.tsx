@@ -1,6 +1,7 @@
 import BestPresetResult from "@/components/BestPresetResult";
 import EditAccountButton from "@/components/EditAccountButton";
-import ResultTable from "@/components/ResultsTable";
+import LastResultTable from "@/components/ResultsTable";
+import TypingStats from "@/components/TypingStats";
 import formattedDate from "@/lib/formatDate";
 import formateTime from "@/lib/formatTime";
 import {
@@ -8,13 +9,16 @@ import {
   useAccountStore,
   WORD_TEST_PRESETS,
 } from "@/store/useAccountStore";
+import { useLatestStore } from "@/store/useLatestResults";
 import { RiAccountCircleFill } from "react-icons/ri";
-//TODO: сдлать таблицу со средней статистикой по аккаунту
 
+//TODO: когда сделаю стор с лучшим впм, передавать его сюда и заменить на лучший впм за полсдение 30 тестов (я могу сделать больше тестов но статистика будет отслеживать только лучшую за послдение 30)
 export default function StatisticPage() {
   const { username, createdAt, testStarted, testCompleted, totalTypingMs } =
     useAccountStore();
+  const results = useLatestStore((state) => state.results);
   const formattedUsername = username.trim();
+  const typingTime = formateTime(totalTypingMs / 1000);
 
   return (
     <div className="mb-18">
@@ -41,10 +45,7 @@ export default function StatisticPage() {
             <span className="text-text text-3xl">{testCompleted}</span>
           </div>
           <div className="flex flex-col text-sm py-6">
-            time typing{" "}
-            <span className="text-text text-3xl">
-              {formateTime(totalTypingMs / 1000)}
-            </span>
+            time typing <span className="text-text text-3xl">{typingTime}</span>
           </div>
           <div className="px-2.5"></div>
         </div>
@@ -64,7 +65,14 @@ export default function StatisticPage() {
         </div>
       </div>
 
-      <ResultTable />
+      <TypingStats
+        testStarted={testStarted}
+        testCompleted={testCompleted}
+        typingTime={typingTime}
+        results={results}
+      />
+
+      <LastResultTable />
     </div>
   );
 }
