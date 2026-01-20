@@ -12,10 +12,15 @@ import {
 import { useLatestStore } from "@/store/useLatestResults";
 import { RiAccountCircleFill } from "react-icons/ri";
 
-//TODO: когда сделаю стор с лучшим впм, передавать его сюда и заменить на лучший впм за полсдение 30 тестов (я могу сделать больше тестов но статистика будет отслеживать только лучшую за послдение 30)
 export default function StatisticPage() {
-  const { username, createdAt, testStarted, testCompleted, totalTypingMs } =
-    useAccountStore();
+  const {
+    username,
+    createdAt,
+    testStarted,
+    testCompleted,
+    totalTypingMs,
+    bestTimeResults,
+  } = useAccountStore();
   const results = useLatestStore((state) => state.results);
   const formattedUsername = username.trim();
   const typingTime = formateTime(totalTypingMs / 1000);
@@ -70,9 +75,10 @@ export default function StatisticPage() {
         testCompleted={testCompleted}
         typingTime={typingTime}
         results={results}
+        bestTimeResults={bestTimeResults}
       />
 
-      <LastResultTable />
+      <LastResultTable testStarted={testStarted} results={results} />
     </div>
   );
 }

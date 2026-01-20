@@ -5,7 +5,6 @@ import {
   type TimeTestPresets,
   type WordTestPresets,
 } from "@/store/useAccountStore";
-//TODO: сделать модалку с подробным описанием лучшего результата теста
 
 type BestPresetResultProps = {
   preset: TimeTestPresets | WordTestPresets;

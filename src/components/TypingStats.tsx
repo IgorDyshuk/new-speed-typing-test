@@ -1,10 +1,13 @@
+import type { BestTestResults, TimeTestPresets } from "@/store/useAccountStore";
 import type { Result } from "@/store/useLatestResults";
+import BestPresetResult from "./BestPresetResult";
 
 type TypingStatsProps = {
   testStarted: number;
   testCompleted: number;
   typingTime: string;
   results: Result[];
+  bestTimeResults: Record<TimeTestPresets, BestTestResults | null>;
 };
 
 type RenderColumnProps = {
@@ -44,7 +47,7 @@ function RenderColumn({
               ? "average wpm"
               : "average wpm (last 10 tests)"}
         </span>
-        <span className="text-5xl">{wpm}</span>
+        <span className="text-5xl">{wpm === 0 ? "_" : `${wpm}`}</span>
         <span
           className={`${highestResultDetails === "_" ? "text-sm text-background" : "text-sm"} `}
         >
@@ -53,18 +56,27 @@ function RenderColumn({
       </div>
       <div className="flex flex-col ">
         <span className="text-sub leading-normal">
-          {" "}
           {which === "main"
             ? "highest accuracy"
             : which === "average"
               ? "average accuracy"
               : "average accuracy (last 10 tests)"}
         </span>
-        <span className="text-5xl">{accuracy}%</span>
+        <span className="text-5xl">
+          {accuracy === 0 ? "_" : `${accuracy}%`}
+        </span>
       </div>
       <div className="flex flex-col ">
-        <span className="text-sub leading-normal">highest consistency</span>
-        <span className="text-5xl">{consistency}%</span>
+        <span className="text-sub leading-normal">
+          {which === "main"
+            ? "highest consistency"
+            : which === "average"
+              ? "average consistency"
+              : "average consistency (last 10 tests)"}
+        </span>
+        <span className="text-5xl">
+          {consistency === 0 ? "_" : `${consistency}%`}
+        </span>
       </div>
     </div>
   );
@@ -75,14 +87,46 @@ export default function TypingStats({
   testCompleted,
   typingTime,
   results,
+  bestTimeResults,
 }: TypingStatsProps) {
-  const highestWpm = Math.max(...results.map((i) => i.wpm));
-  const highestResult = results.find((result) => result.wpm === highestWpm);
-  const highestResultDetails = highestResult
-    ? `${highestResult.mode} ${highestResult.lasting}`
-    : undefined;
-  const highestAcc = Math.max(...results.map((i) => i.accuracy));
-  const highestCon = Math.max(...results.map((i) => i.consistency));
+  const bestTimeEntries = (
+    Object.entries(bestTimeResults) as [string, BestTestResults | null][]
+  ).flatMap(([preset, res]) =>
+    res ? [{ preset: Number(preset) as TimeTestPresets, result: res }] : [],
+  );
+
+  const bestTimeEntry =
+    bestTimeEntries.length === 0
+      ? null
+      : bestTimeEntries.reduce((best, cur) =>
+          cur.result.wpm > best.result.wpm ? cur : best,
+        );
+
+  const highestWpmStore = bestTimeEntry?.result.wpm ?? 0;
+  const highestWpmLatest =
+    results.length === 0 ? 0 : Math.max(...results.map((i) => i.wpm));
+  const highestWpm = Math.max(highestWpmStore, highestWpmLatest);
+
+  const highestLatestResult = results.find((r) => r.wpm === highestWpm);
+
+  const isBestFromStore =
+    bestTimeEntry?.result?.wpm !== undefined &&
+    highestWpm === bestTimeEntry.result.wpm;
+
+  const isBestFromLatest =
+    highestLatestResult?.wpm !== undefined &&
+    highestWpm === highestLatestResult.wpm;
+
+  const highestResultDetails = isBestFromStore
+    ? `time ${bestTimeEntry.preset}`
+    : isBestFromLatest
+      ? `${highestLatestResult.mode} ${highestLatestResult.lasting}`
+      : "_";
+
+  const highestAcc =
+    results.length === 0 ? 0 : Math.max(...results.map((i) => i.accuracy));
+  const highestCon =
+    results.length === 0 ? 0 : Math.max(...results.map((i) => i.consistency));
 
   const testCompletedStats = testCompleted
     ? `${testCompleted}(${Math.round((testCompleted / testStarted) * 100)}%)`
@@ -116,15 +160,17 @@ export default function TypingStats({
       ? 0
       : last.reduce((sum, result) => sum + result.consistency, 0) / last.length;
 
-  return (
+  return testStarted === 0 ? (
+    <div></div>
+  ) : (
     <div className="grid w-full grid-cols-3 gap-8 text-text">
       <RenderColumn
         which="main"
         firstLine={testStarted}
-        wpm={highestWpm}
+        wpm={Math.round(highestWpm)}
         highestResultDetails={highestResultDetails}
-        accuracy={highestAcc}
-        consistency={highestCon}
+        accuracy={Math.round(highestAcc)}
+        consistency={Math.round(highestCon)}
       />
 
       <RenderColumn

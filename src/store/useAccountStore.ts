@@ -6,7 +6,7 @@ export const WORD_TEST_PRESETS = [10, 25, 50, 100] as const;
 export type TimeTestPresets = (typeof TIME_TEST_PRESETS)[number];
 export type WordTestPresets = (typeof WORD_TEST_PRESETS)[number];
 
-type BestTestResults = {
+export type BestTestResults = {
   wpm: number;
   acc: number;
   con: number;

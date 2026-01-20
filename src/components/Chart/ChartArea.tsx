@@ -19,8 +19,6 @@ const chartConfig = {
   errors: { label: "Errors", color: "var(--color-error)" },
 } satisfies ChartConfig;
 
-//TODO: поставить лейбл впм по середине
-
 export function ChartAreaLegend({
   wpmData,
   errorData,

@@ -1,4 +1,4 @@
-import { useLatestStore } from "@/store/useLatestResults";
+import { type Result } from "@/store/useLatestResults";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useState } from "react";
 
@@ -11,10 +11,12 @@ type SortKey =
   | "date";
 
 type DirectionType = "asc" | "desc";
+type LastResultTableProps = { testStarted: number; results: Result[] };
 
-export default function LastResultTable() {
-  const results = useLatestStore((state) => state.results);
-
+export default function LastResultTable({
+  testStarted,
+  results,
+}: LastResultTableProps) {
   const [sortBy, setSortBy] = useState<SortKey>("date");
   const [dir, setDir] = useState<DirectionType>("desc");
 
@@ -81,7 +83,9 @@ export default function LastResultTable() {
     return { date, time };
   };
 
-  return (
+  return testStarted === 0 ? (
+    <div></div>
+  ) : (
     <div className="flex flex-col gap-3 mt-25">
       <table className="text-text w-full">
         <thead className="text-sub text-sm w-full">
