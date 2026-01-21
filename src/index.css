@@ -8,3 +8,15 @@ body {
     font-weight: 100;
     font-style: normal;
 }
+
+@keyframes account-blink {
+    0%, 100% { opacity: 1; }
+    40% { opacity: 0.2; }
+    60% { opacity: 1; }
+}
+
+.blink-once {
+    display: inline-block;
+    animation: account-blink 0.5s ease-in-out;
+    will-change: opacity;
+}

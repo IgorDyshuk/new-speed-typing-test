@@ -14,10 +14,11 @@ import { Button } from "./ui/button";
 import { useAccountStore } from "@/store/useAccountStore";
 import { RiAccountCircleLine } from "react-icons/ri";
 import { RiAccountCircleFill } from "react-icons/ri";
-import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useDailyStatsStore } from "@/store/useDailyStatsStore";
 
 export default function AccountButton() {
   const { isAuthenticated, login } = useAuthStore();
@@ -27,6 +28,8 @@ export default function AccountButton() {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const onResultPage = pathname === "/results";
 
   const submit = () => {
     const next = inputRef.current?.value.trim() ?? "";
@@ -36,7 +39,21 @@ export default function AccountButton() {
     setUsername(next);
     setOpen(false);
     toast.success("You successfully sign up");
+    if (onResultPage) {
+      navigate("/statistic", { replace: true });
+    }
   };
+  const { totalMs } = useDailyStatsStore();
+  const warnedRef = useRef(false);
+
+  useEffect(() => {
+    const shouldWarn = totalMs / 1000 > 130 && !isAuthenticated && onResultPage;
+    if (shouldWarn && !warnedRef.current) {
+      warnedRef.current = true;
+      toast.message("Sign up to save your result");
+    }
+    if (!shouldWarn) warnedRef.current = false;
+  }, [isAuthenticated, totalMs, onResultPage]);
 
   return (
     <Dialog
@@ -57,9 +74,9 @@ export default function AccountButton() {
           }}
         >
           {isAuthenticated ? (
-            <RiAccountCircleFill className="h-7 w-7" />
+            <RiAccountCircleFill className={`h-7 w-7`} />
           ) : (
-            <RiAccountCircleLine className="h-7 w-7" />
+            <RiAccountCircleLine className={`h-7 w-7`} />
           )}
           <span>{formattedUsername}</span>
         </button>

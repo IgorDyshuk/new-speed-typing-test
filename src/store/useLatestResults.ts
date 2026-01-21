@@ -1,6 +1,7 @@
 import type { TestMode } from "@/hooks/useTypingGame";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { useAuthStore } from "./useAuthStore";
 
 export type Result = {
   wpm: number;
@@ -25,14 +26,20 @@ type LatestResultsState = {
 
 export const useLatestStore = create<LatestResultsState>()(
   persist(
-    (set, get) => ({
-      results: [],
-      addResult: (result) =>
-        set(() => ({
-          results: [result, ...get().results].slice(0, 30),
-        })),
-      clearResults: () => set({ results: [] }),
-    }),
+    (set, get) => {
+      const canWrite = () => useAuthStore.getState().isAuthenticated;
+
+      return {
+        results: [],
+        addResult: (result) => {
+          if (!canWrite()) return;
+          set(() => ({
+            results: [result, ...get().results].slice(0, 30),
+          }));
+        },
+        clearResults: () => set({ results: [] }),
+      };
+    },
     {
       name: "latest-results",
       version: 1,

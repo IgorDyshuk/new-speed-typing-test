@@ -8,11 +8,13 @@ import {
   useAccountStore,
   WORD_TEST_PRESETS,
 } from "@/store/useAccountStore";
+import { useAuthStore } from "@/store/useAuthStore";
 import { useDailyStatsStore } from "@/store/useDailyStatsStore";
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { useLatestStore } from "@/store/useLatestResults";
 
 export default function ResultsPage() {
   const navigate = useNavigate();
@@ -47,6 +49,7 @@ export default function ResultsPage() {
     navigate("/", { replace: true });
     return null;
   }
+  const wasAuthenticated = summary.wasAuthenticated;
 
   const languageLabel = getLanguageLabel(summary.language);
 
@@ -69,14 +72,21 @@ export default function ResultsPage() {
   ].join("\n");
 
   const { totalMs } = useDailyStatsStore();
+  const { isAuthenticated } = useAuthStore();
   const updateBestTimeResult = useAccountStore((s) => s.updateBestTimeResult);
   const updateBestWordResult = useAccountStore((s) => s.updateBestWordResult);
+  const addTypingMs = useAccountStore((s) => s.addTypingMs);
+  const incrementTestStarted = useAccountStore((s) => s.incrementTestStarted);
+  const incrementTestCompleted = useAccountStore(
+    (s) => s.incrementTestCompleted,
+  );
+  const addResult = useLatestStore((state) => state.addResult);
 
   const hasSyncedBestRef = useRef(false);
 
   useEffect(() => {
     if (!summary) return;
-    if (!summary.wasAuthenticated) return;
+    if (!isAuthenticated) return;
     if (hasSyncedBestRef.current) return;
 
     const now = new Date().toISOString();
@@ -85,40 +95,74 @@ export default function ResultsPage() {
     if (summary.mode === "time") {
       const duration = Math.round(summary.durationSeconds);
       const preset = TIME_TEST_PRESETS.find((value) => value === duration);
-      if (!preset) return;
-
-      updated = updateBestTimeResult(preset, {
-        wpm: summary.wpm,
-        acc: summary.acc,
-        con: summary.wpmConsistency,
-        language: summary.language,
-        completedAt: now,
-        includeNumbers: summary.includeNumbers,
-        includePunctuation: summary.includePunctuation,
-      });
+      if (preset) {
+        updated = updateBestTimeResult(preset, {
+          wpm: summary.wpm,
+          acc: summary.acc,
+          con: summary.wpmConsistency,
+          language: summary.language,
+          completedAt: now,
+          includeNumbers: summary.includeNumbers,
+          includePunctuation: summary.includePunctuation,
+        });
+      }
     } else if (summary.mode === "words") {
       const words = Math.round(summary.totalWords);
       const preset = WORD_TEST_PRESETS.find((value) => value === words);
-      if (!preset) return;
+      if (preset) {
+        updated = updateBestWordResult(preset, {
+          wpm: summary.wpm,
+          acc: summary.acc,
+          con: summary.wpmConsistency,
+          language: summary.language,
+          completedAt: now,
+          includeNumbers: summary.includeNumbers,
+          includePunctuation: summary.includePunctuation,
+        });
+      }
+    }
 
-      updated = updateBestWordResult(preset, {
+    if (!wasAuthenticated) {
+      incrementTestStarted();
+      incrementTestCompleted();
+      addTypingMs(Math.round(summary.totalSeconds * 1000));
+      addResult({
         wpm: summary.wpm,
-        acc: summary.acc,
-        con: summary.wpmConsistency,
-        language: summary.language,
+        accuracy: summary.acc,
+        consistency: summary.wpmConsistency,
+        totals: {
+          totalTyped: summary.totalTyped,
+          correctLetters: summary.correctLetters,
+          incorrectLetters: summary.incorrectLetters,
+          extraLetters: summary.extraLetters,
+        },
+        mode: summary.mode,
+        lasting:
+          summary.mode === "time"
+            ? Math.round(summary.durationSeconds)
+            : Math.round(summary.totalWords),
         completedAt: now,
-        includeNumbers: summary.includeNumbers,
-        includePunctuation: summary.includePunctuation,
       });
     }
 
-    if (updated && summary.wasAuthenticated) {
+    if (updated && wasAuthenticated) {
       toast.success("Congrats with new record", { position: "top-center" });
       const common = { particleCount: 120, spread: 70, startVelocity: 45 };
-      confetti({ ...common, origin: { x: 0, y: 0.6 }, angle: 60 });
-      confetti({ ...common, origin: { x: 1, y: 0.6 }, angle: 120 });
+      confetti({ ...common, origin: { x: 0, y: 0.5 }, angle: 60 });
+      confetti({ ...common, origin: { x: 1, y: 0.5 }, angle: 120 });
     }
-  });
+    hasSyncedBestRef.current = true;
+  }, [
+    summary,
+    isAuthenticated,
+    wasAuthenticated,
+    updateBestTimeResult,
+    updateBestWordResult,
+    incrementTestStarted,
+    incrementTestCompleted,
+    addTypingMs,
+    addResult,
+  ]);
 
   return (
     <div className="bg-background mt-52 flex justify-center items-center">
