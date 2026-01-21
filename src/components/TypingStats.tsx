@@ -1,6 +1,5 @@
 import type { BestTestResults, TimeTestPresets } from "@/store/useAccountStore";
 import type { Result } from "@/store/useLatestResults";
-import BestPresetResult from "./BestPresetResult";
 
 type TypingStatsProps = {
   testStarted: number;

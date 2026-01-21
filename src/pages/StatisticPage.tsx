@@ -4,15 +4,19 @@ import LastResultTable from "@/components/ResultsTable";
 import TypingStats from "@/components/TypingStats";
 import formattedDate from "@/lib/formatDate";
 import formateTime from "@/lib/formatTime";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   TIME_TEST_PRESETS,
   useAccountStore,
   WORD_TEST_PRESETS,
 } from "@/store/useAccountStore";
+import { useAuthStore } from "@/store/useAuthStore";
 import { useLatestStore } from "@/store/useLatestResults";
 import { RiAccountCircleFill } from "react-icons/ri";
 
 export default function StatisticPage() {
+  const navigate = useNavigate();
   const {
     username,
     createdAt,
@@ -21,9 +25,14 @@ export default function StatisticPage() {
     totalTypingMs,
     bestTimeResults,
   } = useAccountStore();
+  const { isAuthenticated } = useAuthStore();
   const results = useLatestStore((state) => state.results);
   const formattedUsername = username.trim();
   const typingTime = formateTime(totalTypingMs / 1000);
+
+  useEffect(() => {
+    if (!isAuthenticated) navigate("/", { replace: true });
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className="mb-18">

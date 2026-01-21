@@ -17,21 +17,32 @@ import { RiAccountCircleFill } from "react-icons/ri";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function AccountButton() {
+  const { isAuthenticated, login } = useAuthStore();
   const { username, setUsername } = useAccountStore();
   const formattedUsername = username.trim();
-  const isLoggedIn = Boolean(formattedUsername);
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const navigate = useNavigate();
 
+  const submit = () => {
+    const next = inputRef.current?.value.trim() ?? "";
+    if (!next) return;
+    const userId = crypto.randomUUID();
+    login(userId);
+    setUsername(next);
+    setOpen(false);
+    toast.success("You successfully sign up");
+  };
+
   return (
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        if (isLoggedIn && next) return;
+        if (isAuthenticated && next) return;
         setOpen(next);
       }}
     >
@@ -40,12 +51,12 @@ export default function AccountButton() {
           type="button"
           className="flex items-center gap-2 hover:cursor-pointer"
           onClick={(event) => {
-            if (!isLoggedIn) return;
+            if (!isAuthenticated) return;
             event.preventDefault();
             navigate("/statistic");
           }}
         >
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <RiAccountCircleFill className="h-7 w-7" />
           ) : (
             <RiAccountCircleLine className="h-7 w-7" />
@@ -72,10 +83,7 @@ export default function AccountButton() {
               onKeyDown={(event) => {
                 if (event.key !== "Enter") return;
                 event.preventDefault();
-                const next = inputRef.current?.value.trim() ?? "";
-                setUsername(next);
-                setOpen(false);
-                toast.success("You successfully sign up");
+                submit();
               }}
             />
           </div>
@@ -88,10 +96,7 @@ export default function AccountButton() {
             type="button"
             variant="submit"
             onClick={() => {
-              const next = inputRef.current?.value?.trim() ?? "";
-              setUsername(next);
-              setOpen(false);
-              toast.success("You successfully sign up");
+              submit();
             }}
           >
             Save

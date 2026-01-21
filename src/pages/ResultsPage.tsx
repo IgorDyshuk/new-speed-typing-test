@@ -11,6 +11,8 @@ import {
 import { useDailyStatsStore } from "@/store/useDailyStatsStore";
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 export default function ResultsPage() {
   const navigate = useNavigate();
@@ -35,6 +37,7 @@ export default function ResultsPage() {
         wpmSamples: number[];
         errorDeltaSamples: [number, number][];
         wpmConsistency: number;
+        wasAuthenticated: boolean;
       };
     };
   };
@@ -73,18 +76,23 @@ export default function ResultsPage() {
 
   useEffect(() => {
     if (!summary) return;
+    if (!summary.wasAuthenticated) return;
     if (hasSyncedBestRef.current) return;
+
+    const now = new Date().toISOString();
+    let updated = false;
+
     if (summary.mode === "time") {
       const duration = Math.round(summary.durationSeconds);
       const preset = TIME_TEST_PRESETS.find((value) => value === duration);
       if (!preset) return;
 
-      updateBestTimeResult(preset, {
+      updated = updateBestTimeResult(preset, {
         wpm: summary.wpm,
         acc: summary.acc,
         con: summary.wpmConsistency,
         language: summary.language,
-        completedAt: new Date().toISOString(),
+        completedAt: now,
         includeNumbers: summary.includeNumbers,
         includePunctuation: summary.includePunctuation,
       });
@@ -93,15 +101,22 @@ export default function ResultsPage() {
       const preset = WORD_TEST_PRESETS.find((value) => value === words);
       if (!preset) return;
 
-      updateBestWordResult(preset, {
+      updated = updateBestWordResult(preset, {
         wpm: summary.wpm,
         acc: summary.acc,
         con: summary.wpmConsistency,
         language: summary.language,
-        completedAt: new Date().toISOString(),
+        completedAt: now,
         includeNumbers: summary.includeNumbers,
         includePunctuation: summary.includePunctuation,
       });
+    }
+
+    if (updated && summary.wasAuthenticated) {
+      toast.success("Congrats with new record", { position: "top-center" });
+      const common = { particleCount: 120, spread: 70, startVelocity: 45 };
+      confetti({ ...common, origin: { x: 0, y: 0.6 }, angle: 60 });
+      confetti({ ...common, origin: { x: 1, y: 0.6 }, angle: 120 });
     }
   });
 

@@ -1,4 +1,5 @@
 import i18n from "@/i18n";
+import { useAuthStore } from "@/store/useAuthStore";
 import { useDailyStatsStore } from "@/store/useDailyStatsStore";
 import { useLatestStore } from "@/store/useLatestResults";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -7,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 
 // TODO: сделать оптимизацию хука
 //TODO: починить китайский и японский язык
-//TODO: если побил рекорд по впм сделать эффект конфити и через уведомления поздравить пользователся (только для заранее поставленных значениях теста)
 //TODO: *добавть уровни для аккаунта
 
 export type LetterStatus = "pending" | "correct" | "incorrect";
@@ -467,6 +467,7 @@ export default function useTypingGame(
     if (hasSavedResultRef.current) return;
     hasSavedResultRef.current = true;
     const completedAt = new Date().toISOString();
+    const wasAuthenticated = useAuthStore.getState().isAuthenticated;
     navigate("/results", {
       state: {
         summary: {
@@ -486,6 +487,7 @@ export default function useTypingGame(
           wpmSamples,
           errorDeltaSamples,
           wpmConsistency,
+          wasAuthenticated,
           historicalMistakes: correctHistoricalMistakes,
           language: i18n.language,
         },

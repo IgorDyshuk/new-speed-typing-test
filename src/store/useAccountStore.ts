@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { useAuthStore } from "./useAuthStore";
 
 export const TIME_TEST_PRESETS = [10, 30, 60, 120] as const;
 export const WORD_TEST_PRESETS = [10, 25, 50, 100] as const;
@@ -33,13 +34,13 @@ type AccountState = {
   updateBestTimeResult: (
     duration: TimeTestPresets,
     result: BestTestResults,
-  ) => void;
+  ) => boolean;
 
   bestWordResults: Record<WordTestPresets, BestTestResults | null>;
   updateBestWordResult: (
     words: WordTestPresets,
     result: BestTestResults,
-  ) => void;
+  ) => boolean;
 };
 
 const buildInitialBestTestResults = (): Record<
@@ -64,58 +65,66 @@ const buildInitialBestWordResults = (): Record<
 
 export const useAccountStore = create<AccountState>()(
   persist(
-    (set) => ({
-      username: "",
-      createdAt: null,
-      setUsername: (name) =>
-        set((state) => {
-          const trimmed = name.trim();
+    (set, get) => {
+      const canWrite = () => useAuthStore.getState().isAuthenticated;
 
-          return {
-            username: trimmed,
-            createdAt: trimmed
-              ? (state.createdAt ?? new Date().toISOString())
-              : null,
-          };
-        }),
+      return {
+        username: "",
+        createdAt: null,
+        setUsername: (name) => {
+          if (!canWrite()) return;
+          set((state) => {
+            const trimmed = name.trim();
 
-      testStarted: 0,
-      incrementTestStarted: () =>
-        set((state) => ({ testStarted: state.testStarted + 1 })),
-      testCompleted: 0,
-      incrementTestCompleted: () =>
-        set((state) => ({ testCompleted: state.testCompleted + 1 })),
+            return {
+              username: trimmed,
+              createdAt: trimmed
+                ? (state.createdAt ?? new Date().toISOString())
+                : null,
+            };
+          });
+        },
 
-      totalTypingMs: 0,
-      addTypingMs: (delta) =>
-        set((state) => ({ totalTypingMs: state.totalTypingMs + delta })),
+        testStarted: 0,
+        incrementTestStarted: () => {
+          if (!canWrite()) return;
+          set((state) => ({ testStarted: state.testStarted + 1 }));
+        },
+        testCompleted: 0,
+        incrementTestCompleted: () => {
+          if (!canWrite()) return;
+          set((state) => ({ testCompleted: state.testCompleted + 1 }));
+        },
 
-      bestTimeResults: buildInitialBestTestResults(),
-      updateBestTimeResult: (duration, result) =>
-        set((state) => {
-          const prev = state.bestTimeResults[duration];
-          if (prev && prev.wpm >= result.wpm) return state;
-          return {
-            bestTimeResults: {
-              ...state.bestTimeResults,
-              [duration]: result,
-            },
-          };
-        }),
+        totalTypingMs: 0,
+        addTypingMs: (delta) => {
+          if (!canWrite()) return;
+          set((state) => ({ totalTypingMs: state.totalTypingMs + delta }));
+        },
 
-      bestWordResults: buildInitialBestWordResults(),
-      updateBestWordResult: (words, result) =>
-        set((state) => {
-          const prev = state.bestWordResults[words];
-          if (prev && prev.wpm >= result.wpm) return state;
-          return {
-            bestWordResults: {
-              ...state.bestWordResults,
-              [words]: result,
-            },
-          };
-        }),
-    }),
+        bestTimeResults: buildInitialBestTestResults(),
+        updateBestTimeResult: (duration, result) => {
+          if (!canWrite()) return false;
+          const prev = get().bestTimeResults[duration];
+          if (prev && prev.wpm >= result.wpm) return false;
+          set((state) => ({
+            bestTimeResults: { ...state.bestTimeResults, [duration]: result },
+          }));
+          return true;
+        },
+
+        bestWordResults: buildInitialBestWordResults(),
+        updateBestWordResult: (words, result) => {
+          if (!canWrite()) return false;
+          const prev = get().bestWordResults[words];
+          if (prev && prev.wpm >= result.wpm) return false;
+          set((state) => ({
+            bestWordResults: { ...state.bestWordResults, [words]: result },
+          }));
+          return true;
+        },
+      };
+    },
     { name: "typing-account" },
   ),
 );
