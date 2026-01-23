@@ -12,8 +12,8 @@ export const LANGUAGES = [
   { label: "czech", code: "cs" },
   { label: "hungarian", code: "hu" },
 
-  { label: "chinese", code: "zh" },
-  { label: "japanese", code: "ja" },
+  // { label: "chinese", code: "zh" },
+  // { label: "japanese", code: "ja" },
   { label: "korean", code: "ko" },
 
   { label: "swedish", code: "sv" },

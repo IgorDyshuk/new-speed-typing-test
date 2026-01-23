@@ -26,7 +26,7 @@ export default function Header() {
   const logoAccent = started && !finished ? "text-sub" : "text-main";
 
   return (
-    <header className="flex justify-between py-8">
+    <header className="flex justify-between py-5 lg:py-8">
       <button
         onClick={handleHeaderClick}
         className={`flex items-center hover:cursor-pointer `}

@@ -6,7 +6,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-// TODO: сделать оптимизацию хука
 //TODO: починить китайский и японский язык
 //TODO: *добавть уровни для аккаунта
 

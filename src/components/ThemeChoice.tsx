@@ -114,7 +114,9 @@ export function ThemeChoice() {
   const { started, finished } = useGameSessionStore();
   const visibleTheme = started && !finished ? "opacity-0" : "opacity-100";
   const isStatistic = pathname === "/statistic";
-  const positionClass = isStatistic ? "mt-28" : "absolute bottom-0 right-45";
+  const positionClass = isStatistic
+    ? "mt-28"
+    : "absolute bottom-0 right-2 sm:right-14 md:right-22 lg:right-31 xl:right-39 2xl:right-45";
 
   return (
     <div

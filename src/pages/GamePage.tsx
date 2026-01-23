@@ -5,6 +5,7 @@ import RestartButton from "@/components/restartButton/RestartButton.tsx";
 import useTypingGame, { type LetterStatus } from "@/hooks/useTypingGame";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ModalBlur from "@/components/ModalBlur";
+import MobileTestConfig from "@/components/MobileTestConfig";
 import TestConfig from "@/components/TestConfig";
 import {
   defaultSettings,
@@ -194,6 +195,11 @@ export default function GamePage() {
   }, []);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const refocusInput = useCallback(() => {
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  }, []);
   const setFocusInput = useGameSessionStore((state) => state.setFocusInput);
   useEffect(() => {
     inputRef.current?.focus();
@@ -258,8 +264,77 @@ export default function GamePage() {
     setRestart(() => handleRestart());
   }, [handleRestart, setRestart]);
 
+  const handleDurationChange = useCallback(
+    (s: number) => {
+      setDuration(s);
+      restart();
+      refocusInput();
+    },
+    [setDuration, restart, refocusInput],
+  );
+
+  const handleWordCount = useCallback(
+    (n: number) => {
+      setWordCount(n);
+      restart();
+      refocusInput();
+    },
+    [setWordCount, restart, refocusInput],
+  );
+
+  const handleModeChange = useCallback(
+    (nextMode: "time" | "words") => {
+      setMode(nextMode);
+      setWordCount(100);
+      restart();
+      refocusInput();
+    },
+    [setMode, setWordCount, restart, refocusInput],
+  );
+
+  const handleNumbersToggle = useCallback(
+    (next: boolean) => {
+      setWithNumbers(next);
+      restart();
+      refocusInput();
+    },
+    [setWithNumbers, restart, refocusInput],
+  );
+
+  const handlePunctuationToggle = useCallback(
+    (next: boolean) => {
+      setWithPunctuation(next);
+      restart();
+      refocusInput();
+    },
+    [setWithPunctuation, restart, refocusInput],
+  );
+
+  const presetTimes = [10, 30, 60, 120];
+  const presetWords = [10, 25, 50, 100];
+  const [openMobileConfig, setOpenMobileConfig] = useState(false);
+
   return (
     <main className="flex items-center flex-col">
+      <MobileTestConfig
+        open={openMobileConfig}
+        onOpenChange={setOpenMobileConfig}
+        started={started}
+        finished={finished}
+        mode={mode}
+        withNumbers={withNumbers}
+        withPunctuation={withPunctuation}
+        duration={duration}
+        wordCount={wordCount}
+        presetTimes={presetTimes}
+        presetWords={presetWords}
+        onChangeDuration={handleDurationChange}
+        onChangeWordCount={handleWordCount}
+        onModeChange={handleModeChange}
+        onToggleNumbers={handleNumbersToggle}
+        onTogglePunctuation={handlePunctuationToggle}
+        onClose={refocusInput}
+      />
       <div
         className={`transition-opacity duration-300 ${
           !started ? "opacity-100" : "opacity-0"
@@ -267,51 +342,20 @@ export default function GamePage() {
       >
         <TestConfig
           duration={duration}
-          onChangeDuration={(s) => {
-            setDuration(s);
-            restart();
-            requestAnimationFrame(() => {
-              inputRef.current?.focus();
-            });
-          }}
+          onChangeDuration={handleDurationChange}
           wordCount={wordCount}
-          onWordCount={(n) => {
-            setWordCount(n);
-            restart();
-            requestAnimationFrame(() => {
-              inputRef.current?.focus();
-            });
-          }}
+          onWordCount={handleWordCount}
           mode={mode}
-          onModeChange={(nextMode) => {
-            setMode(nextMode);
-            setWordCount(100);
-            restart();
-            requestAnimationFrame(() => {
-              inputRef.current?.focus();
-            });
-          }}
+          onModeChange={handleModeChange}
           withNumbers={withNumbers}
-          onToggleNumbers={(next) => {
-            setWithNumbers(next);
-            restart();
-            requestAnimationFrame(() => {
-              inputRef.current?.focus();
-            });
-          }}
+          onToggleNumbers={handleNumbersToggle}
           withPunctuation={withPunctuation}
-          onTogglePunctuation={(next) => {
-            setWithPunctuation(next);
-            restart();
-            requestAnimationFrame(() => {
-              inputRef.current?.focus();
-            });
-          }}
+          onTogglePunctuation={handlePunctuationToggle}
         />
       </div>
       <div
         id="typingTest"
-        className={`relative pt-53 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
+        className={`relative pt-20 lg:pt-30 2xl:pt-53 flex flex-col items-center justify-center outline-none transition-opacity duration-150 ${
           wordsPhase === "fade-out" || wordsPhase === "initial"
             ? "opacity-0"
             : "opacity-100"

@@ -19,7 +19,7 @@ export default defineConfig({
   },
   server: {
     // Allow accessing the dev server via the ngrok host
-    allowedHosts: ["partly-popular-airedale.ngrok-free.app"],
+    allowedHosts: ["953f8d146628.ngrok-free.app"],
     // Listen on all interfaces so tunnels/proxies can reach it
     host: true,
   },

@@ -10,7 +10,7 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="royal" storageKey="vite-ui-theme">
-      <div className="bg-background leading-[250%] relative px-45 h-[92vh]">
+      <div className="bg-background leading-[250%] relative px-2 sm:px-10 md:px-17 lg:px-25 xl:px-30 2xl:px-45 h-[92vh]">
         <QueryClientProvider client={queryClient}>
           <HashRouter>
             <Header />

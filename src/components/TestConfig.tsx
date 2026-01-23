@@ -137,7 +137,7 @@ export default function TestConfig({
   };
 
   return (
-    <div className="flex items-center gap-7 bg-sub-alt text-sub w-fit text-[12px] leading-3 pl-4 pr-2 py-1.5 rounded-md">
+    <div className="hidden md:flex items-center gap-7 bg-sub-alt text-sub w-fit text-[12px] leading-3 pl-4 pr-2 py-1.5 rounded-md">
       <button
         type="button"
         onClick={() => onTogglePunctuation(!withPunctuation)}

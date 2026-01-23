@@ -32,10 +32,11 @@ export default function WordList({
   const measuredRef = useRef(false);
   const [contentOffset, setContentOffset] = useState(0);
 
-  // Measure line height once using the first word (height + vertical margins)
+  // Measure line height using the first word (height + vertical margins)
   useLayoutEffect(() => {
+    measuredRef.current = false;
     const el = firstWordRef.current;
-    if (!el || measuredRef.current) return;
+    if (!el) return;
     const style = window.getComputedStyle(el);
     const mt = parseFloat(style.marginTop || "0");
     const mb = parseFloat(style.marginBottom || "0");
@@ -44,7 +45,7 @@ export default function WordList({
       lineHeightRef.current = h;
       measuredRef.current = true;
     }
-  }, []);
+  }, [words]);
 
   const caretMetrics = useMemo(() => {
     const extraCount = extras[currentWordIndex]?.length ?? 0;
@@ -59,10 +60,7 @@ export default function WordList({
   useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    const lh =
-      lineHeightRef.current ||
-      container.getBoundingClientRect().height / 3 ||
-      48;
+    const lh = 54;
 
     const current = container.querySelector(
       '[data-current="true"]',
