@@ -20,3 +20,20 @@ body {
     animation: account-blink 0.5s ease-in-out;
     will-change: opacity;
 }
+
+.typing-caret {
+    transition:
+        left 130ms ease-out,
+        top 130ms ease-out,
+        height 140ms ease-out;
+    transform: translateZ(0);
+}
+
+@media (min-width: 1024px) {
+    .typing-caret {
+        transition:
+            left 100ms ease-out,
+            top 100ms ease-out,
+            height 100ms ease-out;
+    }
+}

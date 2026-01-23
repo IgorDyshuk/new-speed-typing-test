@@ -129,6 +129,9 @@ export default function WordList({
                     data-side={
                       isEndAnchor ? "after" : isCurrent ? "before" : undefined
                     }
+                    style={{
+                      transition: "color 120ms ease, text-shadow 120ms ease",
+                    }}
                   >
                     {ch}
                   </span>
@@ -143,6 +146,7 @@ export default function WordList({
                     className="letter text-error-extra"
                     data-current={isLastExtra ? "true" : undefined}
                     data-side={isLastExtra ? "after" : undefined}
+                    style={{ transition: "color 120ms ease" }}
                   >
                     {ex}
                   </span>

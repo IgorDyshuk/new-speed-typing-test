@@ -42,8 +42,7 @@ export default function TypingCaret({
         height: pos.height,
         width: 3,
         borderRadius: 2,
-        transition: "left 90ms ease, top 90ms ease, height 90ms ease",
-        willChange: "left, top",
+        willChange: "left, top, height",
       }}
     />
   );
