@@ -11,6 +11,7 @@ import type { ChartConfig } from "@/components/ui/chart";
 import { useMemo } from "react";
 import RenderErrorDot from "./RenderErrorDots";
 import AnimatedWpmDot from "./AnimatedWpmDot";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 export const description = "An area chart with a legend";
 
@@ -58,18 +59,23 @@ export function ChartAreaLegend({
       .map((entry, index) => ({ ...entry, order: index }));
   }, [wpmData, errorData]);
 
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   return (
-    <Card>
-      <CardContent>
+    <Card className="px-0 md:px-3">
+      <CardContent className="px-0">
         <ChartContainer config={chartConfig} className="h-52 w-full">
           <AreaChart
             accessibilityLayer
             data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
-              top: 8,
-            }}
+            margin={
+              isDesktop
+                ? {
+                    left: 12,
+                    right: 12,
+                    top: 8,
+                  }
+                : { top: 8 }
+            }
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -83,12 +89,16 @@ export function ChartAreaLegend({
               yAxisId={"wpm"}
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              label={{
-                value: "Words per minute",
-                angle: -90,
-                position: "left",
-              }}
+              tickMargin={isDesktop ? 8 : 0}
+              label={
+                isDesktop
+                  ? {
+                      value: "Words per minute",
+                      angle: -90,
+                      position: "left",
+                    }
+                  : {}
+              }
             />
             <YAxis
               dataKey="errors"
@@ -96,12 +106,19 @@ export function ChartAreaLegend({
               orientation="right"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              label={{
-                value: "Errors",
-                angle: -90,
-                position: "right",
-              }}
+              tickMargin={isDesktop ? 8 : 0}
+              label={
+                isDesktop
+                  ? {
+                      value: "Errors",
+                      angle: -90,
+                      position: "right",
+                    }
+                  : {}
+              }
+              // label={{
+              //
+              // }}
             />
             <ChartTooltip
               cursor={false}

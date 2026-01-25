@@ -62,7 +62,7 @@ export default function ResultsPage() {
 
   const mistakeDeltaChartData = errorDeltaSamples.map(([delta, second]) => ({
     second,
-    errors: delta / 2,
+    errors: delta,
   }));
 
   const accTooltip = [
@@ -165,10 +165,10 @@ export default function ResultsPage() {
   ]);
 
   return (
-    <div className="bg-background mt-52 flex justify-center items-center">
+    <div className="bg-background mt-4 sm:mt-18 md:mt-27 lg:mt-35 xl:mt-44 2xl:mt-52 flex justify-center items-center">
       <div className="w-full flex justify-center flex-col">
-        <div className="w-full grid gap-7 grid-cols-[auto_1fr] text-sub pb-px text-[1rem] leading-4">
-          <div className="flex flex-col gap-2">
+        <div className="w-full grid gap-1 md:gap-7 md:grid-cols-[auto_1fr] text-sub pb-px text-[1rem] leading-4">
+          <div className="flex md:flex-col gap-10 md:gap-2">
             <Tooltip
               label={`${summary.wpm.toFixed(2)} wpm`}
               wrap={false}
@@ -198,34 +198,52 @@ export default function ResultsPage() {
               errorData={mistakeDeltaChartData}
             />
           </div>
-          <div>
-            <p className="pb-2">test type</p>
-            <div className="text-main">
-              <p>
-                {summary.mode}{" "}
-                {summary.mode === "time"
-                  ? Math.round(summary.durationSeconds)
-                  : Math.round(summary.totalWords)}
-              </p>
-              <p>{languageLabel}</p>
-              {summary.includeNumbers && <p>numbers</p>}
-              {summary.includePunctuation && <p>withPunctuation</p>}
+          <div className="flex justify-between mt-4 mb-2 md:mt-0 md:mb-0">
+            <div>
+              <p className="pb-2">test type</p>
+              <div className="text-main">
+                <p>
+                  {summary.mode}{" "}
+                  {summary.mode === "time"
+                    ? Math.round(summary.durationSeconds)
+                    : Math.round(summary.totalWords)}
+                </p>
+                <p>{languageLabel}</p>
+                {summary.includeNumbers && <p>numbers</p>}
+                {summary.includePunctuation && <p>withPunctuation</p>}
+              </div>
+            </div>
+
+            <div className="flex md:hidden">
+              <Tooltip
+                label={`${summary.wpmConsistency.toFixed(2)} %`}
+                wrap={false}
+                beforeTop={-10}
+                afterTop={15}
+              >
+                <p className="pb-3">consistency</p>
+                <p className="text-main text-[2rem]">
+                  {Math.floor(summary.wpmConsistency)}%
+                </p>
+              </Tooltip>
             </div>
           </div>
           <div className="flex justify-between items-start">
-            <div></div>
-            <Tooltip
-              label={`${summary.wpmConsistency.toFixed(2)} %`}
-              wrap={false}
-              beforeTop={-10}
-              afterTop={15}
-            >
-              <p className="pb-3">consistency</p>
-              <p className="text-main text-[2rem]">
-                {Math.floor(summary.wpmConsistency)}%
-              </p>
-            </Tooltip>
-            <div></div>
+            <div className="hidden md:flex"></div>
+            <div className="hidden md:flex">
+              <Tooltip
+                label={`${summary.wpmConsistency.toFixed(2)} %`}
+                wrap={false}
+                beforeTop={-10}
+                afterTop={15}
+              >
+                <p className="pb-3">consistency</p>
+                <p className="text-main text-[2rem]">
+                  {Math.floor(summary.wpmConsistency)}%
+                </p>
+              </Tooltip>
+            </div>
+            <div className="hidden md:flex"></div>
             <Tooltip
               label="all-typed correct incorrect extra"
               wrap={true}
