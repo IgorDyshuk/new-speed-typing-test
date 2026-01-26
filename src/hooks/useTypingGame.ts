@@ -216,6 +216,20 @@ export default function useTypingGame(
   const [allErrorsTimestamps, setAllErrorsTimestamps] = useState<number[]>([]);
   const [errorSamples, setErrorSamples] = useState<number[]>([]);
 
+  const recordMistake = useCallback(
+    (count: number = 1) => {
+      if (count <= 0) return;
+      setHistoricalMistakes((prev) => prev + count);
+      setAllErrorsTimestamps((prev) => {
+        const currentSecond = Math.floor(elapsedMs / 1000);
+        if (count === 1) return [...prev, currentSecond];
+        const batch = Array(count).fill(currentSecond);
+        return [...prev, ...batch];
+      });
+    },
+    [elapsedMs],
+  );
+
   const calculateConsistency = (samples: number[], minBaseLine = 1) => {
     if (samples.length <= 1) return 100;
     const avg = samples.reduce((sum, value) => sum + value, 0) / samples.length;
@@ -325,6 +339,7 @@ export default function useTypingGame(
 
   const { addMs } = useDailyStatsStore();
   const prevElapsedRef = useRef(0);
+  const lastKeydownTsRef = useRef(0);
 
   useEffect(() => {
     if (!started || finished) {
@@ -526,6 +541,7 @@ export default function useTypingGame(
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      lastKeydownTsRef.current = Date.now();
       if (finished) {
         e.preventDefault();
         return;
@@ -681,11 +697,14 @@ export default function useTypingGame(
             });
           }
 
+          let newlyIncorrect = 0;
           for (let i = currentCharIndex; i < currentWord.length; i++) {
             if (wordStatuses[i] === "pending") {
               wordStatuses[i] = "incorrect";
+              newlyIncorrect += 1;
             }
           }
+          if (newlyIncorrect > 0) recordMistake(newlyIncorrect);
 
           if (!atLastWord) {
             return finalize({
@@ -708,7 +727,6 @@ export default function useTypingGame(
         }
 
         if (isLetter) {
-          const wasStarted = started;
           if (!started) setStarted(true);
           const expected = currentWord[currentCharIndex] ?? "";
           if (currentCharIndex < currentWord.length) {
@@ -716,13 +734,7 @@ export default function useTypingGame(
             wordStatuses[currentCharIndex] = isCorrect
               ? "correct"
               : "incorrect";
-            if (!isCorrect && wasStarted) {
-              setHistoricalMistakes((prev) => prev + 1);
-              setAllErrorsTimestamps((prev) => {
-                const currentSecond = Math.floor(elapsedMs / 1000);
-                return [...prev, currentSecond];
-              });
-            }
+            if (!isCorrect) recordMistake();
             return finalize({
               words,
               currentWordIndex,
@@ -732,13 +744,7 @@ export default function useTypingGame(
             });
           }
           wordExtras.push(key);
-          if (wasStarted) {
-            setHistoricalMistakes((prev) => prev + 1);
-            setAllErrorsTimestamps((prev) => {
-              const currentSecond = Math.floor(elapsedMs / 1000);
-              return [...prev, currentSecond];
-            });
-          }
+          recordMistake();
           return finalize({
             words,
             currentWordIndex,
@@ -766,6 +772,7 @@ export default function useTypingGame(
       mode,
       isWordsGameComplete,
       elapsedMs,
+      recordMistake,
     ],
   );
 
@@ -798,9 +805,8 @@ export default function useTypingGame(
         return draft;
       };
 
-      if (isLetter) {
-        return;
-      }
+      const now = Date.now();
+      const keydownRecent = now - lastKeydownTsRef.current < 35;
 
       setState((prev) => {
         const { words, currentWordIndex, currentCharIndex } = prev;
@@ -927,11 +933,14 @@ export default function useTypingGame(
             });
           }
 
+          let newlyIncorrect = 0;
           for (let i = currentCharIndex; i < currentWord.length; i++) {
             if (wordStatuses[i] === "pending") {
               wordStatuses[i] = "incorrect";
+              newlyIncorrect += 1;
             }
           }
+          if (newlyIncorrect > 0) recordMistake(newlyIncorrect);
 
           if (currentWordIndex < words.length - 1) {
             return finalize({
@@ -953,11 +962,15 @@ export default function useTypingGame(
         }
 
         if (isLetter) {
+          if (keydownRecent) return prev;
           if (!started) setStarted(true);
           const expected = currentWord[currentCharIndex] ?? "";
           if (currentCharIndex < currentWord.length) {
-            wordStatuses[currentCharIndex] =
-              key === expected ? "correct" : "incorrect";
+            const isCorrect = key === expected;
+            wordStatuses[currentCharIndex] = isCorrect
+              ? "correct"
+              : "incorrect";
+            if (!isCorrect) recordMistake();
             return finalize({
               words,
               currentWordIndex,
@@ -967,6 +980,7 @@ export default function useTypingGame(
             });
           }
           wordExtras.push(key);
+          recordMistake();
           return finalize({
             words,
             currentWordIndex,
@@ -987,7 +1001,7 @@ export default function useTypingGame(
         setFinished(true);
       }
     },
-    [finished, mode, isWordsGameComplete, started],
+    [finished, mode, isWordsGameComplete, started, recordMistake],
   );
 
   return {
