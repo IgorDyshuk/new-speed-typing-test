@@ -254,7 +254,7 @@ export default function useTypingGame(
     [wpmSamples],
   );
 
-  const correctHistoricalMistakes = Math.floor(historicalMistakes);
+  const correctHistoricalMistakes = Math.floor(historicalMistakes / 2);
 
   const isWordsGameComplete = useCallback(
     (draft: TypingState) => {

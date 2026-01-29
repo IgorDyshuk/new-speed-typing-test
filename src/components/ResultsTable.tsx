@@ -55,8 +55,11 @@ export default function LastResultTable({
           (new Date(a.completedAt).getTime() -
             new Date(b.completedAt).getTime())
         );
-      if (key === "characters")
-        return sign * (a.totals.correctLetters - a.totals.correctLetters);
+      if (key === "characters") {
+        const totalA = a.totals?.totalTyped ?? 0;
+        const totalB = b.totals?.totalTyped ?? 0;
+        return sign * (totalA - totalB);
+      }
       return sign * cmp(a[key], b[key]);
     });
   }
@@ -86,63 +89,135 @@ export default function LastResultTable({
   return testStarted === 0 ? (
     <div></div>
   ) : (
-    <div className="flex flex-col gap-3 mt-25">
-      <table className="text-text w-full">
-        <thead className="text-sub text-sm w-full">
-          <tr className="[&>td]:py-2">
-            {headings.map((heading) => (
-              <td
-                key={heading}
-                onClick={() => handleSort(heading)}
-                className="first:pl-12 w-1/6 text-left hover:cursor-pointer"
-              >
-                <span className="flex items-center gap-1">
+    <div className="flex flex-col gap-4 mt-15 md:mt-18 xl:mt-21 2xl:mt-25">
+      <div className="md:hidden flex items-center justify-between px-2 text-sub text-sm">
+        <div className="flex items-center gap-2">
+          <span>sort</span>
+          <select
+            className="bg-sub-alt text-text rounded-md px-2 py-1 text-sm"
+            value={sortBy}
+            onChange={(e) => handleSort(e.target.value as SortKey)}
+          >
+            {headings
+              .filter((h) => h !== "mode" && h !== "characters")
+              .map((heading) => (
+                <option key={heading} value={heading}>
                   {heading}
-                  {sortBy === heading ? (
-                    dir === "asc" ? (
-                      <ArrowUp size={15} />
-                    ) : (
-                      <ArrowDown size={15} />
-                    )
-                  ) : (
-                    ""
-                  )}
+                </option>
+              ))}
+          </select>
+        </div>
+        <button
+          className="bg-sub-alt text-text rounded-md px-2 py-1 text-sm"
+          onClick={() => setDir((d) => (d === "asc" ? "desc" : "asc"))}
+        >
+          {dir === "asc" ? "asc ↑" : "desc ↓"}
+        </button>
+      </div>
+
+      <div className="hidden md:block overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="text-text w-full table-auto border-separate border-spacing-y-1">
+            <thead className="text-sub text-sm">
+              <tr className="[&>th]:py-1 [&>th]:px-3 lg:[&>th]:px-6 bg-background/60">
+                {headings.map((heading) => (
+                  <th
+                    key={heading}
+                    onClick={() => handleSort(heading)}
+                    className={`text-left font-medium tracking-wide hover:cursor-pointer select-none ${
+                      heading === "characters" || heading === "mode"
+                        ? "hidden md:table-cell"
+                        : ""
+                    }`}
+                  >
+                    <span className="flex items-center gap-1">
+                      {heading}
+                      {sortBy === heading ? (
+                        dir === "asc" ? (
+                          <ArrowUp size={15} />
+                        ) : (
+                          <ArrowDown size={15} />
+                        )
+                      ) : (
+                        ""
+                      )}
+                    </span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((result) => {
+                const { date, time } = formatDateTime(result.completedAt);
+                return (
+                  <tr
+                    key={`${result.wpm} ${result.completedAt}`}
+                    className="odd:bg-sub-alt/70 even:bg-background hover:bg-sub-alt transition-colors [&>td]:py-1.5 [&>td]:px-3 lg:[&>td]:px-6"
+                  >
+                    <td>{result.wpm.toFixed(2)}</td>
+                    <td>{result.accuracy.toFixed(2)}%</td>
+                    <td>{result.consistency.toFixed(2)}%</td>
+                    <td className="hidden md:table-cell">
+                      {[
+                        Math.round(result.totals?.totalTyped ?? 0),
+                        Math.round(result.totals?.correctLetters ?? 0),
+                        Math.round(result.totals?.incorrectLetters ?? 0),
+                        Math.round(result.totals?.extraLetters ?? 0),
+                      ].join("/")}
+                    </td>
+                    <td className="hidden md:table-cell">
+                      {result.mode} {result.lasting}
+                    </td>
+                    <td className="pr-4">
+                      <div className="leading-5">{date}</div>
+                      <div className="leading-5 text-sub text-xs">{time}</div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="md:hidden flex flex-col gap-3">
+        {visible.map((result) => {
+          const { date, time } = formatDateTime(result.completedAt);
+          return (
+            <div
+              key={`${result.wpm} ${result.completedAt}`}
+              className="bg-sub-alt rounded-xl p-4 text-text flex flex-col gap-2"
+            >
+              <div className="flex justify-between items-center">
+                <span className="text-xl font-semibold">
+                  {result.wpm.toFixed(0)} wpm
                 </span>
-              </td>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {visible.map((result) => {
-            const { date, time } = formatDateTime(result.completedAt);
-            return (
-              <tr
-                key={`${result.wpm} ${result.completedAt}`}
-                className="odd:bg-sub-alt even:bg-background [&>td]:py-2"
-              >
-                <td className="pl-12">{result.wpm.toFixed(2)}</td>
-                <td>{result.accuracy.toFixed(2)}%</td>
-                <td>{result.consistency.toFixed(2)}%</td>
-                <td>
+                <span className="text-xs text-sub">
+                  {date} • {time}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>acc {result.accuracy.toFixed(1)}%</span>
+                <span>cons {result.consistency.toFixed(1)}%</span>
+              </div>
+              <div className="flex justify-between text-xs text-sub">
+                <span>
+                  {result.mode} {result.lasting}
+                </span>
+                <span>
                   {[
                     Math.round(result.totals?.totalTyped ?? 0),
                     Math.round(result.totals?.correctLetters ?? 0),
                     Math.round(result.totals?.incorrectLetters ?? 0),
                     Math.round(result.totals?.extraLetters ?? 0),
                   ].join("/")}
-                </td>
-                <td>
-                  {result.mode} {result.lasting}
-                </td>
-                <td className="pr-12 flex flex-col gap-0">
-                  <span className="leading-5">{date}</span>{" "}
-                  <span className="leading-5">{time}</span>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {canShowMore && (
         <button
           onClick={handleClick}

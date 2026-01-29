@@ -29,24 +29,26 @@ function RenderColumn({
   return (
     <div className="flex flex-col gap-7">
       <div className="flex flex-col ">
-        <span className="text-sub leading-normal">
+        <span className="text-sub leading-normal text-sm md:text-base">
           {which === "main"
             ? "test started"
             : which === "average"
               ? "test completed"
               : "typing time"}
         </span>
-        <span className="text-5xl">{firstLine}</span>
+        <span className="text-3xl md:text-4xl lg:text-5xl">{firstLine}</span>
       </div>
       <div className="flex flex-col ">
-        <span className="text-sub leading-normal">
+        <span className="text-sub leading-normal text-sm md:text-base">
           {which === "main"
             ? "highest wpm"
             : which === "average"
               ? "average wpm"
               : "average wpm (last 10 tests)"}
         </span>
-        <span className="text-5xl">{wpm === 0 ? "_" : `${wpm}`}</span>
+        <span className="text-3xl md:text-4xl lg:text-5xl">
+          {wpm === 0 ? "_" : `${wpm}`}
+        </span>
         <span
           className={`${highestResultDetails === "_" ? "text-sm text-background" : "text-sm"} `}
         >
@@ -54,26 +56,26 @@ function RenderColumn({
         </span>
       </div>
       <div className="flex flex-col ">
-        <span className="text-sub leading-normal">
+        <span className="text-sub leading-normal text-sm md:text-base">
           {which === "main"
             ? "highest accuracy"
             : which === "average"
               ? "average accuracy"
               : "average accuracy (last 10 tests)"}
         </span>
-        <span className="text-5xl">
+        <span className="text-3xl md:text-4xl lg:text-5xl">
           {accuracy === 0 ? "_" : `${accuracy}%`}
         </span>
       </div>
       <div className="flex flex-col ">
-        <span className="text-sub leading-normal">
+        <span className="text-sub leading-normal text-sm md:text-base">
           {which === "main"
             ? "highest consistency"
             : which === "average"
               ? "average consistency"
               : "average consistency (last 10 tests)"}
         </span>
-        <span className="text-5xl">
+        <span className="text-3xl md:text-4xl lg:text-5xl">
           {consistency === 0 ? "_" : `${consistency}%`}
         </span>
       </div>
@@ -162,7 +164,7 @@ export default function TypingStats({
   return testStarted === 0 ? (
     <div></div>
   ) : (
-    <div className="grid w-full grid-cols-3 gap-8 text-text">
+    <div className="grid w-full grid-cols-2 md:grid-cols-3 gap-3 md:gap-8 text-text">
       <RenderColumn
         which="main"
         firstLine={testStarted}

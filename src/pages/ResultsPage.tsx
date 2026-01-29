@@ -62,7 +62,7 @@ export default function ResultsPage() {
 
   const mistakeDeltaChartData = errorDeltaSamples.map(([delta, second]) => ({
     second,
-    errors: delta,
+    errors: delta / 2,
   }));
 
   const accTooltip = [
