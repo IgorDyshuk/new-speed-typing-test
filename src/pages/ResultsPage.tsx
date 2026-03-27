@@ -53,17 +53,44 @@ export default function ResultsPage() {
 
   const languageLabel = getLanguageLabel(summary.language);
 
-  const wpmChartData = summary.wpmSamples.map((value, index) => ({
+  const errorDeltaSamples = summary.errorDeltaSamples ?? [];
+
+  // In time mode the last sample may arrive after navigation; pad to full duration.
+  const expectedSampleCount =
+    summary.mode === "time"
+      ? Math.max(0, Math.round(summary.durationSeconds))
+      : Math.max(summary.wpmSamples.length, errorDeltaSamples.length);
+
+  const lastKnownWpm =
+    summary.wpmSamples.length > 0
+      ? summary.wpmSamples[summary.wpmSamples.length - 1]
+      : 0;
+  const normalizedWpmSamples = [
+    ...summary.wpmSamples,
+    ...Array(
+      Math.max(0, expectedSampleCount - summary.wpmSamples.length),
+    ).fill(lastKnownWpm),
+  ];
+
+  const wpmChartData = normalizedWpmSamples.map((value, index) => ({
     second: index + 1,
     wpm: Math.floor(value),
   }));
 
-  const errorDeltaSamples = summary.errorDeltaSamples ?? [];
+  const errorDeltaBySecond = new Map(
+    errorDeltaSamples.map(([delta, second]) => [second, delta] as const),
+  );
 
-  const mistakeDeltaChartData = errorDeltaSamples.map(([delta, second]) => ({
-    second,
-    errors: delta,
-  }));
+  const mistakeDeltaChartData = Array.from(
+    { length: expectedSampleCount },
+    (_, index) => {
+      const second = index + 1;
+      return {
+        second,
+        errors: errorDeltaBySecond.get(second) ?? 0,
+      };
+    },
+  );
 
   const accTooltip = [
     `${summary.acc.toFixed(2)}%`,
